@@ -9,6 +9,7 @@ import ProteusConfigFix from "./ProteusConfigFix";
 import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
 import KioskQuickAuth from "./KioskQuickAuth";
+import AuthDiag from "./AuthDiag";
 
 /**
  * Embeds Proteus's JSCart widget (the store's real cart / checkout / delivery /
@@ -220,6 +221,11 @@ export default function ProteusShop({
           field — the only channel that carries one onto the real order. Off on the
           kiosk, where the shopper is already in the building. */}
       {!kiosk && <PickupTimeHint />}
+      {/* TEMPORARY — delete once the double-sign-in question is answered. Shows an
+          auth readout, but only with ?diag=1 in the URL. Deliberately on BOTH
+          surfaces: which of /kiosk and /menu carries a token into checkout is the
+          reading that decides whether the fix is ours or Proteus's. */}
+      <AuthDiag />
       <div id="proteus_shop" className="proteus-full-container" />
     </>
   );
