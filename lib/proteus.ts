@@ -3,10 +3,14 @@
  *  PROTEUS 420 CLIENT
  * ══════════════════════════════════════════════════════════════════════
  *
- *  Almost everything here READS. The ONE write is `createPickupOrder()`
- *  (`addInvoice`) at the bottom — it creates a real invoice, so it is
- *  double-gated: it throws unless BOTH the credentials are set AND
- *  `ORDERING_ENABLED === "true"`. Nothing else in the app can trigger it.
+ *  This module only READS. It fetches the live catalogue from Proteus and
+ *  normalises it for the site.
+ *
+ *  There is no write path. Ordering runs entirely through Proteus's own
+ *  JSCart widget (see app/components/ProteusShop.tsx), which owns the cart,
+ *  checkout, accounts and payment. The custom pickup-order system that used
+ *  to live at the bottom of this file was retired on 22 August 2026 when the
+ *  site consolidated onto that widget; it is in git history if ever needed.
  *
  *  🔒 Credentials come from .env.local and never reach the browser. This
  *     module is server-only; importing it into a client component fails.
@@ -16,21 +20,12 @@
 import type {
   LabData,
   MenuResult,
-  OrderCustomer,
-  OrderLine,
   Product,
   Terpene,
 } from "./types";
 
 const CLIENT = process.env.PROTEUS_CLIENT_NAME ?? "highlife";
 const PASS = process.env.PROTEUS_WEBSERVICE_PASS ?? "";
-/**
- * Separate credential for WRITES (createPickupOrder / addInvoice). The read key
- * (PASS) can't create invoices — only the "Proteus Apps" key can. Kept distinct
- * so the public menu runs on a read-only key and only ordering holds write power.
- * Falls back to PASS if unset.
- */
-const ORDER_PASS = process.env.PROTEUS_ORDER_PASS ?? PASS;
 /**
  * The integration identity sent on every call. Per the Proteus API docs: "Each
  * integration (app, website access, etc) will be given a specific AppName which
@@ -484,194 +479,4 @@ export async function getMenu(): Promise<MenuResult> {
       error: e instanceof Error ? e.message : "Could not reach Proteus",
     };
   }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   PICKUP ORDERING
-
-   `checkTaxes` and `findUser` are read-only. `createPickupOrder` is the ONE
-   write — double-gated on credentials AND ORDERING_ENABLED. The request body
-   mirrors a real `fromwebsite=1` order observed in Proteus.
-   ═══════════════════════════════════════════════════════════════════════ */
-
-/** The write is gated on this, on top of credentials. Default OFF. */
-export function isOrderingEnabled(): boolean {
-  return process.env.ORDERING_ENABLED === "true";
-}
-
-/** NYS cannabis retail tax. Mirrors data/site.ts (kept here to avoid importing client code). */
-const ORDER_TAX_RATE = 0.13;
-
-export type OrderTotals = { subtotalCents: number; taxCents: number; totalCents: number };
-
-/** Local totals in cents. The register recomputes tax at payment — this is the estimate. */
-export function computeTotals(lines: OrderLine[]): OrderTotals {
-  const subtotalCents = lines.reduce((n, l) => n + l.unitPriceCents * l.quantity, 0);
-  const taxCents = Math.round(subtotalCents * ORDER_TAX_RATE);
-  return { subtotalCents, taxCents, totalCents: subtotalCents + taxCents };
-}
-
-/**
- * Authoritative taxes from Proteus (read-only). Returns null on any error so
- * the caller falls back to computeTotals — an order is NEVER blocked on this.
- * ⚠️ Request shape still being confirmed live (earlier attempt: "Data object
- * was not sent"); until it's verified, callers should expect null.
- */
-export async function checkTaxes(lines: OrderLine[]): Promise<OrderTotals | null> {
-  try {
-    const data = JSON.stringify({
-      items: lines.map((l) => ({
-        prodid: Number(l.productId),
-        qty: l.quantity,
-        pricetype: l.priceType,
-      })),
-    });
-    const res = (await call("invoices_json.cfm", { action: "checkTaxes", data })) as Record<
-      string,
-      unknown
-    >;
-    const totalprice = num(res.totalprice);
-    const totaltaxes = num(res.totaltaxes);
-    const grandtotal = num(res.grandtotal);
-    if (totalprice == null || totaltaxes == null) return null;
-    return {
-      subtotalCents: Math.round(totalprice * 100),
-      taxCents: Math.round(totaltaxes * 100),
-      totalCents: Math.round((grandtotal ?? totalprice + totaltaxes) * 100),
-    };
-  } catch {
-    return null;
-  }
-}
-
-/** Match a returning customer by last name + phone; returns their id or null. */
-export async function findUser(lastName: string, phone: string): Promise<string | null> {
-  try {
-    const res = (await call("invoices_json.cfm", {
-      action: "findUser",
-      lname: lastName,
-      phone,
-    })) as Record<string, unknown>;
-    const id = res.customer_id;
-    return id != null && String(id).trim() ? String(id) : null;
-  } catch {
-    return null;
-  }
-}
-
-const toDollars = (cents: number) => Math.round(cents) / 100;
-
-/**
- * Builds the `addInvoice` body WITHOUT sending it or the secret. Kept pure so
- * the dry-run verification script can print and diff it against the real
- * `fromwebsite=1` template at zero write risk.
- *
- * ⚠️ The documented example omitted `fromwebsite`, `shipping_type`, and the
- * customer-name fields — these are matched to the STORED record shape and are
- * the most likely thing to adjust on the first live test.
- */
-export function buildInvoicePayload(args: {
-  customer: OrderCustomer;
-  lines: OrderLine[];
-  totals: OrderTotals;
-  customerId?: string | null;
-  invoiceId?: string;
-  now?: Date;
-}): Record<string, unknown> {
-  const { customer, lines, totals } = args;
-  const now = args.now ?? new Date();
-  const stamp = now.toISOString().slice(0, 19).replace("T", " ");
-  const invoiceId = args.invoiceId ?? String(now.getTime());
-
-  return {
-    action: "addInvoice",
-    // guest (0) unless we matched a returning customer
-    customerID: args.customerId ? Number(args.customerId) || 0 : 0,
-    customerType: "recreational",
-    // Contact carried on the order so it identifies the customer in the queue.
-    // Input param names are fname/lname/phone/email (NOT customer_* — those are
-    // how Proteus STORES them). Confirmed live: sending customer_* fails with
-    // "The name is required (fname, lname, or company)".
-    fname: customer.firstName,
-    lname: customer.lastName,
-    phone: customer.phone,
-    email: customer.email ?? "",
-    // Unpaid reservation. NOTE: `fromwebsite` is NOT a real addInvoice param — it
-    // isn't in the API at all. Proteus derives the order's SOURCE (web vs POS) from
-    // the AppName the call is made under (see APP_NAME / createPickupOrder). We keep
-    // fromwebsite/shipping_type here as harmless, self-documenting hints; the real
-    // fulfillment control is `qty_shipped: 0` on the line items below.
-    fromwebsite: 1,
-    shipping_type: "pickup",
-    status: "notpaid",
-    invoiceID: invoiceId,
-    recon_num: "",
-    invoicedate: stamp,
-    subtotal: toDollars(totals.subtotalCents),
-    totaltax: toDollars(totals.taxCents),
-    discountamt: 0,
-    total_paid: 0,
-    payments: [],
-    items: lines.map((l) => ({
-      sku: l.sku ?? "",
-      product_id: Number(l.productId) || l.productId,
-      qty_ordered: l.quantity,
-      // 0 = nothing pulled yet ⇒ order lands UNFULFILLED in the Fulfillment
-      // Queue for the inventory room. Sending qty_shipped == qty_ordered makes
-      // Proteus mark it fulfilled immediately (confirmed live on invoice 4508).
-      qty_shipped: 0,
-      price: toDollars(l.unitPriceCents),
-      base_original_price: toDollars(l.unitPriceCents),
-      price_type: l.priceType,
-      name: l.name,
-      tax_amount: 0,
-      updated_at: stamp,
-    })),
-  };
-}
-
-/**
- * THE WRITE. Creates a real pickup-reservation invoice in Proteus.
- * Double-gated: throws unless credentials are set AND ordering is enabled.
- */
-export async function createPickupOrder(args: {
-  customer: OrderCustomer;
-  lines: OrderLine[];
-  totals: OrderTotals;
-  customerId?: string | null;
-}): Promise<{ invoiceId: string }> {
-  if (!isConfigured()) throw new Error("Proteus credentials not set");
-  if (!isOrderingEnabled()) throw new Error("Ordering is disabled (ORDERING_ENABLED is not 'true')");
-
-  // The order's SOURCE ("web" vs "pos") is derived by Proteus from the AppName this
-  // call is made under. Blank ⇒ Proteus can't attribute it to the website integration
-  // and it shows as a register/POS sale. Set PROTEUS_APP_NAME to the website
-  // integration's AppName (Proteus → API Keys) to tag these as web orders.
-  if (!APP_NAME) {
-    console.warn(
-      "[order] PROTEUS_APP_NAME is blank — reservation will not be tagged as web-sourced (may show as POS in Proteus)."
-    );
-  }
-
-  // ORDER_PASS (write key), not PASS (read key) — only the write key can create invoices.
-  const payload = { ...buildInvoicePayload(args), webservicepass: ORDER_PASS, appname: APP_NAME };
-
-  const res = await fetch(`${BASE}/orders/?type=standard`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(payload),
-    cache: "no-store",
-  });
-  const text = await res.text();
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new Error(`addInvoice returned non-JSON (${text.slice(0, 120)}…)`);
-  }
-  const obj = parsed as Record<string, unknown>;
-  // Proteus reports failures as HTTP 200 {"error":…}
-  if (typeof obj.error === "string" && obj.error.trim()) throw new Error(`addInvoice: ${obj.error}`);
-  if (obj.success == null) throw new Error(`addInvoice: unexpected response ${text.slice(0, 120)}`);
-  return { invoiceId: String(obj.success) };
 }
