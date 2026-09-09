@@ -49,11 +49,55 @@ type Snapshot = {
   checkoutHost: string;
 };
 
+/** What we keep after the page has gone to Proteus. Deliberately no customer
+ *  name and no token value — see WRITTEN RECORD below. */
+type LastRun = { at: number; page: string; sent: number; host: string; hadSession: boolean };
+
 const KEY = "proteus_auth_highlife";
+
+/**
+ * ── WRITTEN RECORD ───────────────────────────────────────────────────────────
+ * Pressing checkout navigates the tablet away to Proteus, taking the live badge
+ * with it. Nobody can photograph a number in the half second before that, least
+ * of all with a real customer waiting — and the whole point is to catch a FIRST
+ * TIME customer, who turns up when they turn up.
+ *
+ * So the reading is written to storage as it happens and shown again on the next
+ * load. Leave the tablet on ?diag=1, let a new customer use it, and read the
+ * answer afterwards at your leisure.
+ *
+ * Survives what the kiosk does between customers: kioskFullReset() deletes only
+ * the orderComplete/invoice/kiosk/view params and reloads, so ?diag=1 stays in
+ * the address bar, and it clears the cart and auth but not this key.
+ *
+ * Records no customer name and no token value — this sits on a shared tablet in
+ * a shop. Lengths and a timestamp are enough to tell the two causes apart.
+ */
+const LAST = "hl_authdiag_last";
+
+/**
+ * ── WHY THE FLAG IS STICKY ───────────────────────────────────────────────────
+ * ?diag=1 cannot survive in the address bar. The widget rewrites the URL from its
+ * own view state on every navigation — pushState() calls buildUrl(), which
+ * reconstructs the query string and keeps only params it owns. Ours is dropped
+ * within a second of load, so it is gone by the next reload — and the kiosk
+ * reloads after every order and every idle timeout.
+ *
+ * That kills the whole point: waiting for a first-time customer means leaving the
+ * tablet in this mode for hours. So ?diag=1 arms it in storage instead, and it
+ * stays armed across reloads until it expires or is switched off with ?diag=0.
+ *
+ * EXPIRES ON ITS OWN after 24 hours. A debug badge left on a shop-floor tablet
+ * is exactly the sort of thing that gets forgotten, and a customer should never
+ * meet it. The badge shows the time remaining so it is never a surprise.
+ */
+const ARMED = "hl_authdiag_until";
+const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export default function AuthDiag() {
   const [on, setOn] = useState(false);
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const [expiresIn, setExpiresIn] = useState(0);
 
   useEffect(() => {
     let params: URLSearchParams;
@@ -62,7 +106,44 @@ export default function AuthDiag() {
     } catch {
       return;
     }
-    if (params.get("diag") !== "1") return;
+    const flag = params.get("diag");
+
+    if (flag === "0") {
+      try {
+        localStorage.removeItem(ARMED);
+        localStorage.removeItem(LAST);
+      } catch {
+        /* ignore */
+      }
+      return; // switched off, and the recorded reading cleared with it
+    }
+
+    let until = 0;
+    try {
+      until = Number(localStorage.getItem(ARMED)) || 0;
+    } catch {
+      /* ignore */
+    }
+
+    if (flag === "1") {
+      until = Date.now() + WINDOW_MS;
+      try {
+        localStorage.setItem(ARMED, String(until));
+      } catch {
+        /* private mode: this load only */
+      }
+    } else if (until <= Date.now()) {
+      if (until) {
+        try {
+          localStorage.removeItem(ARMED);
+        } catch {
+          /* ignore */
+        }
+      }
+      return; // never armed, or the 24 hours ran out
+    }
+
+    setExpiresIn(until);
     setOn(true);
 
     let atCheckout: number | null = null;
@@ -116,6 +197,19 @@ export default function AuthDiag() {
       } catch {
         checkoutHost = form.action || "";
       }
+      // Write it down before the page leaves. Synchronous, so it lands.
+      try {
+        const rec: LastRun = {
+          at: Date.now(),
+          page: location.pathname,
+          sent: atCheckout,
+          host: checkoutHost,
+          hadSession: read().hasToken,
+        };
+        localStorage.setItem(LAST, JSON.stringify(rec));
+      } catch {
+        /* private mode — the live badge still shows it */
+      }
       setSnap(read());
       // Let the submit proceed untouched.
     };
@@ -128,6 +222,22 @@ export default function AuthDiag() {
   }, []);
 
   if (!on || !snap) return null;
+
+  // The reading from the last time anyone pressed checkout on this tablet.
+  let last: LastRun | null = null;
+  try {
+    const raw = localStorage.getItem(LAST);
+    last = raw ? (JSON.parse(raw) as LastRun) : null;
+  } catch {
+    /* ignore */
+  }
+  const ago = (t: number) => {
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m} min ago`;
+    const h = Math.round(m / 60);
+    return h < 48 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+  };
 
   const row = (label: string, value: string, bad?: boolean) => (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
@@ -170,8 +280,37 @@ export default function AuthDiag() {
           : row("token sent", snap.atCheckout > 0 ? `${snap.atCheckout} chars` : "EMPTY", snap.atCheckout === 0)}
         {snap.checkoutHost ? row("posted to", snap.checkoutHost) : null}
       </div>
-      <div style={{ opacity: 0.55, fontSize: 10.5, marginTop: 4 }}>
-        temporary · ?diag=1 only · no token values shown
+      {/* Survives the navigation to Proteus, so the answer can be read later. */}
+      <div
+        style={{
+          borderTop: "1px solid #2f4a3a",
+          marginTop: 7,
+          paddingTop: 6,
+          background: last ? "rgba(123,255,176,.06)" : undefined,
+          borderRadius: 6,
+          padding: last ? "6px 7px" : undefined,
+        }}
+      >
+        <div style={{ opacity: 0.7, marginBottom: 3, letterSpacing: ".05em" }}>
+          LAST CHECKOUT ON THIS TABLET
+        </div>
+        {last ? (
+          <>
+            {row("when", ago(last.at))}
+            {row("from", last.page)}
+            {row("token sent", last.sent > 0 ? `${last.sent} chars` : "EMPTY", last.sent === 0)}
+            {row("posted to", last.host)}
+          </>
+        ) : (
+          <div style={{ opacity: 0.6 }}>nothing recorded yet</div>
+        )}
+      </div>
+      <div style={{ opacity: 0.55, fontSize: 10.5, marginTop: 5, lineHeight: 1.5 }}>
+        {expiresIn
+          ? `stays on ${Math.max(1, Math.round((expiresIn - Date.now()) / 3600000))}h more · turn off with ?diag=0`
+          : "turn off with ?diag=0"}
+        <br />
+        no names or token values kept
       </div>
     </div>
   );
