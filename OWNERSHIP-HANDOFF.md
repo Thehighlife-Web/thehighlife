@@ -17,7 +17,6 @@ Any key that has been typed into a chat, email, screenshot, or text should be tr
 that's confirmed) — once a secret leaves a secure place, you rotate it.
 
 - [ ] **Proteus read key** (menu) — regenerate in Proteus → Settings/API.
-- [ ] **Proteus write key** ("Proteus Apps" / ordering) — regenerate in Proteus.
 - [ ] **The 4 test keys** created while we were experimenting — delete or regenerate them.
 - [ ] After regenerating, update the values in **both** places (see Section E): your local
       `.env.local` and the **Netlify environment variables**, then redeploy.
@@ -65,9 +64,9 @@ the signage site.
 ### Proteus (the POS)
 - [ ] Provision **dedicated API keys owned at the business/app level**, ideally created from
       the **license holder's** Proteus account — not your personal marketing-manager access.
-- [ ] Keep them **split by job**: a **read** key for the public menu, and a separate
-      **write** key used only by ordering. (The site is already built to use two separate
-      keys — don't collapse them into one.)
+- [ ] A **read** key is all the website needs. It only fetches the menu; it never writes
+      to Proteus. Ordering runs inside Proteus's own JSCart checkout, which authenticates
+      on their side — so do **not** give the site a write key.
 
 ---
 
@@ -98,10 +97,7 @@ The website reads these names (values live only in the two places above):
 |---|---|---|
 | `PROTEUS_CLIENT_NAME` | Your Proteus account name (`highlife`) | no |
 | `PROTEUS_WEBSERVICE_PASS` | Proteus **read** key (menu) | 🔒 yes |
-| `PROTEUS_ORDER_PASS` | Proteus **write** key (ordering) | 🔒 yes |
-| `PROTEUS_APP_NAME` | Your **website integration's AppName** — Proteus uses it to tag orders as a **web** source instead of a register/POS sale. Blank still works but orders show as POS. Find it in Proteus → API Keys / Integrations. | no |
-| `ORDERING_ENABLED` | `true` turns the reservation API on (server) | no |
-| `NEXT_PUBLIC_ORDERING_ENABLED` | `true` shows the reserve button (browser) | no |
+| `PROTEUS_APP_NAME` | Your website integration's AppName, sent with menu requests to identify this site to Proteus. Find it in Proteus → API Keys / Integrations. | no |
 | `SITE_PUBLIC` | `true` lets search engines index the live site | no |
 
 > Anything starting with `NEXT_PUBLIC_` is visible in the browser **by design** — so a real
