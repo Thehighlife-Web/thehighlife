@@ -317,11 +317,22 @@ export function categoryMenuHref(slug: string): string {
   return id ? `/menu#view=products&cat=${id}` : "/menu";
 }
 
+/**
+ * Shown on the homepage (components/Stats.tsx) and /about — both read this list,
+ * so a change here lands on both.
+ *
+ * Keep it to things that are true on any given day and need no small print. A
+ * fourth entry, "15% Off Your First Visit", was removed on 9 September 2026: the
+ * offer was no longer being advertised, and a discount promised on the homepage
+ * that a customer cannot then claim is worse than no discount at all.
+ *
+ * If a fourth is ever added, `.statgrid` in globals.css needs its column count
+ * put back to 4 — it is set to the number of entries so no cell sits empty.
+ */
 export const stats = [
   { count: 40, suffix: "+", label: "Brands On Shelf" },
   { count: 100, suffix: "%", label: "Lab-Tested (NY OCM)" },
   { count: 7, suffix: "", label: "Days A Week Open" },
-  { count: 15, suffix: "%", label: "Off Your First Visit" },
 ];
 
 /**
