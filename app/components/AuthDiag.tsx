@@ -180,11 +180,20 @@ export default function AuthDiag() {
     setSnap(read());
     const poll = setInterval(() => setSnap(read()), 1000);
 
-    // Catch the value at the moment it matters. The widget builds a <form>, appends
-    // it to the body and submits it — so intercept submit rather than trying to
-    // guess when checkout() runs. Same interception approach as ProteusStockLimit.
-    const onSubmit = (e: Event) => {
-      const form = e.target as HTMLFormElement | null;
+    // Catch the value at the moment it matters: when the checkout form leaves.
+    //
+    // ⚠️ A `submit` EVENT LISTENER ALONE NEVER FIRES HERE. checkout() ends with
+    //     document.body.appendChild(form);
+    //     form.submit();
+    // and HTMLFormElement.submit() deliberately skips the submit event — it is the
+    // programmatic path, with no event and no validation. The first version of
+    // this component listened for the event, passed every test (the tests fired
+    // the event by hand), and would have recorded nothing on a real checkout.
+    //
+    // So wrap the method itself, the same way ProteusStockLimit wraps
+    // _cardIncrementQty. The listener stays too, for a checkout that ever submits
+    // through a real button.
+    const record = (form: HTMLFormElement) => {
       if (!form || form.tagName !== "FORM") return;
       if (!/checkout_init\.cfm/i.test(form.action || "")) return;
       const field = form.querySelector<HTMLInputElement>('input[name="authToken"]');
@@ -211,13 +220,30 @@ export default function AuthDiag() {
         /* private mode — the live badge still shows it */
       }
       setSnap(read());
-      // Let the submit proceed untouched.
     };
+
+    // The path checkout() actually takes. Record, then hand straight back to the
+    // real submit — never block it, never touch the form.
+    const nativeSubmit = HTMLFormElement.prototype.submit;
+    const wrapped = function (this: HTMLFormElement) {
+      try {
+        record(this);
+      } catch {
+        /* a diagnostic must never be the reason a checkout fails */
+      }
+      return nativeSubmit.call(this);
+    };
+    HTMLFormElement.prototype.submit = wrapped;
+
+    const onSubmit = (e: Event) => record(e.target as HTMLFormElement);
     document.addEventListener("submit", onSubmit, true);
 
     return () => {
       clearInterval(poll);
       document.removeEventListener("submit", onSubmit, true);
+      if (HTMLFormElement.prototype.submit === wrapped) {
+        HTMLFormElement.prototype.submit = nativeSubmit;
+      }
     };
   }, []);
 

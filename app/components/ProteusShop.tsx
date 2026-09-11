@@ -116,19 +116,35 @@ export default function ProteusShop({
         theme: "dark", // brand skin lives in globals.css (#proteus_shop)
         headerTitle: "Shop The High Life",
         logoImage: "",
-        // Keep the shopper on the High Life domain through checkout. Proteus’s
-        // white-label host serves the same cart, so the only thing that changes is
-        // the hostname in the address bar at the moment someone is deciding whether
-        // to trust us with their details.
+        // WHERE CHECKOUT GOES — differs on purpose between the website and the kiosk.
         //
-        // ⚠️ Do NOT also set `baseUrl` here. It looks like the obvious next step and
-        // it takes the shop down. The widget builds API calls as
+        // Website: the High Life domain. Proteus's white-label host serves the same
+        // cart, so the only thing that changes is the hostname in the address bar at
+        // the moment someone is deciding whether to trust us with their details.
+        //
+        // Kiosk: the SAME host that issues the login token. Sign-in calls
+        //     baseUrl + "/highlife/api_auth.cfm"  ->  cart.proteus420.com
+        // and checkout posts that token to checkoutUrl + "/checkout_init.cfm". Sent to
+        // a different host, kiosk customers were being asked to sign in a second time
+        // on Proteus's checkout page. This is exactly what Proteus's own hosted kiosk
+        // does — cart.proteus420.com/highlife/kiosk/index.cfm sets
+        //     checkoutUrl: window.location.origin + pathname.replace(/\/kiosk.../, '')
+        // which resolves to the same value as below, with the comment that a
+        // different host means "the cookie is lost". It costs nothing here: a locked
+        // tablet has no address bar, so the branded hostname buys nobody anything.
+        //
+        // ⚠️ The kiosk value keeps the /highlife client segment; the website's does
+        // not. The white-label host serves at its ROOT (so /highlife 404s there),
+        // while cart.proteus420.com serves under /highlife. Don't "tidy" them to match.
+        //
+        // ⚠️ Do NOT also set `baseUrl`. It looks like the obvious next step and it
+        // takes the shop down. The widget builds API calls as
         //     baseUrl + "/" + client + "/api_cart_v2.cfm"
-        // and the white-label host serves everything at its ROOT —
-        // cart.thehighlifeny.com/highlife/... is a 404. checkoutUrl is safe because it
-        // is used without the client segment (checkoutUrl + "/checkout_init.cfm").
-        // So baseUrl stays unset and keeps defaulting to cart.proteus420.com.
-        checkoutUrl: "https://cart.thehighlifeny.com",
+        // and the white-label host does not serve that path at all. So baseUrl stays
+        // unset and keeps defaulting to cart.proteus420.com, on both surfaces.
+        checkoutUrl: kiosk
+          ? "https://cart.proteus420.com/highlife"
+          : "https://cart.thehighlifeny.com",
         // Guest / anonymous checkout OFF — everywhere, kiosk and public site alike.
         // An unidentified order isn't something a licensed dispensary can take; every
         // order has to tie to a customer.
