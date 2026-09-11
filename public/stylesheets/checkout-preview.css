@@ -111,8 +111,21 @@ html body .modern-auth-wrapper {
 }
 
 /* ── TOP BAR ──────────────────────────────────────────────────────────────── */
+/* Proteus writes this bar's colour INLINE, from an account setting:
+       <nav class="navbar" style="background-color:#4b4b4b!important;">
+   An inline !important declaration outranks every stylesheet rule — there is no
+   selector strong enough, so `background` below simply loses to it.
+
+   The way round: an INSET box-shadow is painted above an element's background
+   but below its content. Proteus sets no shadow inline, so this one applies —
+   black covers the grey, and the logo and links render on top untouched. No
+   position or layout change, unlike a ::before overlay.
+
+   (The real fix is changing the header colour in Proteus's settings; this makes
+   it not matter.) */
 html body nav.navbar {
   background: var(--hl-bg) !important;
+  box-shadow: inset 0 0 0 100vmax var(--hl-bg) !important;
   border-bottom: 1px solid var(--hl-line) !important;
 }
 html body nav.navbar .navbar-nav .nav-link {
