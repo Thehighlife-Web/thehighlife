@@ -1,31 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap");
 
 /* ════════════════════════════════════════════════════════════════════════════
-   ⚠️  TEST COPY — NOT LIVE.  Proteus's checkout does NOT load this file.
-   ════════════════════════════════════════════════════════════════════════════
-   Proteus only ever requests  /stylesheets/proteus-shop-custom.css.  This one is
-   named differently on purpose, so it can sit on the live server with no
-   customer ever seeing it, and be previewed on the REAL checkout by layering it
-   on with a browser bookmarklet:
-
-     javascript:(function(){var i='hl-preview-css',o=document.getElementById(i);
-     if(o){o.remove();return}var l=document.createElement('link');l.id=i;
-     l.rel='stylesheet';l.href='https://thehighlifeny.com/stylesheets/
-     checkout-preview.css?t='+Date.now();document.head.appendChild(l)})();
-
-   (Click once to apply, again to remove — a before/after toggle.)
-
-   Why not just load it from localhost: browsers block a public page reaching
-   into the viewer's own machine (net::ERR_BLOCKED_BY_CLIENT on the checkout),
-   and are tightening that, not loosening it. A public HTTPS URL has no such
-   problem, and works on a phone too.
-
-   GOING LIVE = copy this file to proteus-shop-custom.css (and drop this banner).
-   The bookmarklet appends the sheet LAST, which is easier to win from than the
-   live slot (3rd of 14) — but every rule was verified from slot 3 in a harness
-   loading Proteus's real stylesheets, so what looks right here holds live.
-
-   ════════════════════════════════════════════════════════════════════════════
    THE HIGH LIFE — skin for Proteus's hosted checkout
    ════════════════════════════════════════════════════════════════════════════
 
