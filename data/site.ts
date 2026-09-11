@@ -318,6 +318,48 @@ export function categoryMenuHref(slug: string): string {
 }
 
 /**
+ * DEAL OF THE DAY — the bar across the top of every page (components/DealBanner).
+ *
+ * To run a new one, edit this object. To run none, set it to null.
+ *
+ * `endsAt` is a hard stop: the bar is not rendered after it, and a page already
+ * open when it passes removes the bar on the spot — so nothing needs to be taken
+ * down by hand, and the site can never advertise a deal that has ended. Write it
+ * with the Eastern offset spelled out: -04:00 in summer (EDT), -05:00 in winter
+ * (EST). A bare "2026-09-11T21:00" would be read in the VISITOR's timezone.
+ *
+ * `href` should be the deal's own coupon in the menu, so the tap lands on the
+ * products the deal actually applies to. The number is the Proteus coupon id,
+ * from https://cart.proteus420.com/highlife/api_cart_v2.cfm?action=deals.
+ * Check the deal exists there before advertising it — a promotion the checkout
+ * won't apply is worse than no promotion.
+ */
+export type DealOfTheDay = {
+  /** product line, as a customer would say it */
+  title: string;
+  /** the offer in full, for wide screens */
+  offer: string;
+  /** the offer in brief, for phones */
+  offerShort: string;
+  href: string;
+  /** ISO timestamp WITH offset, e.g. "2026-09-11T21:00:00-04:00" */
+  endsAt: string;
+  /** how the end is said aloud, e.g. "9 PM" */
+  endsLabel: string;
+};
+
+export const dealOfTheDay: DealOfTheDay | null = {
+  title: "Jeeter 1g Pre-Rolls",
+  offer: "Buy One, Get One",
+  offerShort: "B1G1",
+  // Proteus coupon #94, "Jeeter 1g pre roll B1G1" — confirmed live, with products.
+  href: "/menu#view=products&coupon=94",
+  // Friday 11 September 2026, 9:00 PM Eastern.
+  endsAt: "2026-09-11T21:00:00-04:00",
+  endsLabel: "9 PM",
+};
+
+/**
  * Shown on the homepage (components/Stats.tsx) and /about — both read this list,
  * so a change here lands on both.
  *

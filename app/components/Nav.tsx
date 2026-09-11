@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { store } from "@/data/site";
 import CategoryBar from "./CategoryBar";
+import DealBanner from "./DealBanner";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -85,6 +86,8 @@ export default function Nav() {
 
   return (
     <nav id="nav">
+      {/* Deal of the day — renders nothing when there's no deal, or after it ends. */}
+      <DealBanner />
       {/* top row: logo, links, sign-in */}
       <div className="nav-main">
         <a className="brand" href="/" aria-label={`${store.name} — home`}>

@@ -91,6 +91,54 @@
     .nav-drawer,.nav-scrim{display:none}
   }
 
+  /* ---------- deal of the day (components/DealBanner.tsx) ----------
+     The top row of the fixed nav. Its height is a CONSTANT on purpose: that is
+     what lets the page make room for it in pure CSS. `body:has(.dealbar)` adds
+     exactly --dealbar-h of top padding, so the taller nav never covers the top
+     of a page — and the padding disappears the moment the bar unmounts at the
+     deal's end time. No script measures anything, so nothing can lag or jump. */
+  :root{--dealbar-h:40px}
+  body:has(.dealbar){padding-top:var(--dealbar-h)}
+  .dealbar{display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.6vw,18px);
+    height:var(--dealbar-h);padding:0 clamp(14px,4vw,40px);
+    background:linear-gradient(90deg,#0b2415 0%,#15532f 50%,#0b2415 100%);
+    border-bottom:1px solid rgba(59,232,127,.38);
+    color:var(--white);text-decoration:none;white-space:nowrap;overflow:hidden;
+    font-size:13.5px;line-height:1;transition:background .25s}
+  .dealbar:hover{background:linear-gradient(90deg,#0d2c1a 0%,#1a633a 50%,#0d2c1a 100%)}
+  .dealbar:focus-visible{outline:2px solid var(--green);outline-offset:-3px}
+  .dealbar-tag{display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:100px;
+    background:var(--green);color:#08120b;font-family:var(--mono);font-size:10.5px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase}
+  /* "live" pulse — the one piece of motion, and it stops for reduced-motion */
+  .dealbar-dot{width:7px;height:7px;border-radius:50%;background:#08120b;animation:dealpulse 1.8s ease-in-out infinite}
+  @keyframes dealpulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .dealbar-deal{display:inline-flex;align-items:baseline;gap:9px}
+  .dealbar-deal b{font-family:var(--groovy);font-weight:800;font-size:16px;letter-spacing:.01em}
+  .dealbar-offer{color:var(--green);font-weight:700}
+  .dealbar-time{font-family:var(--mono);font-size:12px;color:rgba(243,247,241,.74);font-variant-numeric:tabular-nums}
+  .dealbar-cta{color:var(--green);font-weight:700;font-size:13px}
+  /* Two wordings, one line each: the long one needs ~760px, so phones get the short */
+  .dealbar-narrow{display:none}
+  @media(max-width:759px){
+    :root{--dealbar-h:44px}   /* a little taller where it's tapped with a thumb */
+    .dealbar-wide{display:none}
+    .dealbar-narrow{display:inline}
+    .dealbar-deal b{font-size:15px}
+  }
+  /* Small phones. At 375px the short wording fit with 0px spare, and at 320px
+     it overflowed by 16px — enough for ordinary font differences between an
+     iPhone and an Android to clip the end off. Tighter spacing buys the room
+     back without dropping any words. */
+  @media(max-width:400px){
+    .dealbar{gap:7px;padding:0 10px}
+    .dealbar-tag{padding:4px 8px 4px 7px;gap:6px;letter-spacing:.08em}
+    .dealbar-deal{gap:6px}
+  }
+  /* The whole bar is the link, so the arrow is the one thing it can spare. */
+  @media(max-width:340px){.dealbar-cta{display:none}}
+  @media(prefers-reduced-motion:reduce){.dealbar-dot{animation:none}}
+
   /* hero */
   .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(20px,5vw,54px);overflow:hidden}
   #smoke{position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:.32}
