@@ -1,0 +1,448 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap");
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ⚠️  TEST COPY — NOT LIVE.  Proteus's checkout does NOT load this file.
+   ════════════════════════════════════════════════════════════════════════════
+   Proteus only ever requests  /stylesheets/proteus-shop-custom.css.  This one is
+   named differently on purpose, so it can sit on the live server with no
+   customer ever seeing it, and be previewed on the REAL checkout by layering it
+   on with a browser bookmarklet:
+
+     javascript:(function(){var i='hl-preview-css',o=document.getElementById(i);
+     if(o){o.remove();return}var l=document.createElement('link');l.id=i;
+     l.rel='stylesheet';l.href='https://thehighlifeny.com/stylesheets/
+     checkout-preview.css?t='+Date.now();document.head.appendChild(l)})();
+
+   (Click once to apply, again to remove — a before/after toggle.)
+
+   Why not just load it from localhost: browsers block a public page reaching
+   into the viewer's own machine (net::ERR_BLOCKED_BY_CLIENT on the checkout),
+   and are tightening that, not loosening it. A public HTTPS URL has no such
+   problem, and works on a phone too.
+
+   GOING LIVE = copy this file to proteus-shop-custom.css (and drop this banner).
+   The bookmarklet appends the sheet LAST, which is easier to win from than the
+   live slot (3rd of 14) — but every rule was verified from slot 3 in a harness
+   loading Proteus's real stylesheets, so what looks right here holds live.
+
+   ════════════════════════════════════════════════════════════════════════════
+   THE HIGH LIFE — skin for Proteus's hosted checkout
+   ════════════════════════════════════════════════════════════════════════════
+
+   Proteus's checkout pages (sign-in, contact details, order summary, payment)
+   are served by Proteus, not by this site — but every one of them loads THIS
+   file, from this exact URL:
+
+       https://thehighlifeny.com/stylesheets/proteus-shop-custom.css
+
+   on both hosts (cart.proteus420.com/highlife and cart.thehighlifeny.com). It
+   404'd for months; Proteus built the slot, nobody filled it. Filling it is how
+   the checkout gets our look without Proteus doing anything.
+
+   Customers were leaving a black-and-green shop for a plain white page at the
+   exact moment they decide whether to trust us with an order. This closes that.
+
+   ── HOW IT WINS ───────────────────────────────────────────────────────────────
+   This file loads THIRD. Eleven Proteus stylesheets load after it, and their own
+   custom file (cart.proteus420.com/.../proteus-shop-custom.css) marks almost
+   every rule !important — so a normal rule here loses every tie.
+
+   So every rule is !important (which also beats Proteus's inline style=""),
+   and prefixed `html body` for an extra (0,0,2) of specificity — enough to
+   outrank their rules outright rather than relying on load order, where this
+   file would lose.
+
+   Inside the checkout cards, rules are written `html body :is(C) <thing>`,
+   where C is the list of card wrappers. :is() takes its most specific argument
+   — (0,2,0) — which puts every deliberate style at (0,3,2) or above, strictly
+   over the SAFETY NET at (0,2,2). Don't shorten a selector to drop the :is(C)
+   half: it would still apply, but lose to the net, and quietly render wrong.
+
+   ── WHAT IT DOES NOT TOUCH ────────────────────────────────────────────────────
+   Colour, type, borders and backgrounds only. No widths, grids, display, order
+   or position (one deliberate exception: the broken placeholder logo). Proteus's
+   own rules still decide the layout, including on the kiosk tablet and phones —
+   so this can make the checkout look wrong, but it cannot stop anyone paying.
+
+   ── IF SOMETHING LOOKS BROKEN ─────────────────────────────────────────────────
+   Deleting this file restores Proteus's default look on the next deploy. It is
+   purely additive.
+
+   Tokens mirror app/globals.css :root — keep them in step if the brand changes.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --hl-bg: #08090a;
+  --hl-bg-2: #0e110f;
+  --hl-panel: #101512;
+  --hl-panel-2: #151b17;
+  --hl-green: #3be87f;
+  --hl-green-dim: #1e7a47;
+  --hl-white: #f3f7f1;
+  --hl-muted: #a9b0a0;
+  --hl-line: rgba(243, 247, 241, 0.09);
+  --hl-line-2: rgba(243, 247, 241, 0.16);
+  --hl-on-green: #08120b;
+  --hl-groovy: "Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+  --hl-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Native controls (radio buttons, scrollbars, date pickers) render dark too. */
+html {
+  color-scheme: dark !important;
+  accent-color: var(--hl-green) !important;
+}
+
+/* ── PAGE ─────────────────────────────────────────────────────────────────── */
+/* Proteus's template has TWO <body> tags (the second is #jqueryBody), and
+   nests its content in #proteusjscartcontent and main.container-fluid. Each one
+   paints its own light grey, so all of them need the ground. */
+html body,
+html body #jqueryBody,
+html body #proteusjscartcontent,
+html body main.container-fluid,
+html body .minimal-checkout,
+html body .modern-checkout-wrapper,
+html body .modern-auth-wrapper {
+  background: var(--hl-bg) !important;
+  background-color: var(--hl-bg) !important;
+  color: var(--hl-white) !important;
+  font-family: var(--hl-body) !important;
+}
+
+/* ── TOP BAR ──────────────────────────────────────────────────────────────── */
+html body nav.navbar {
+  background: var(--hl-bg) !important;
+  border-bottom: 1px solid var(--hl-line) !important;
+}
+html body nav.navbar .navbar-nav .nav-link {
+  color: var(--hl-muted) !important;
+}
+html body nav.navbar .navbar-nav .nav-link:hover,
+html body nav.navbar .navbar-nav .nav-link:focus {
+  color: var(--hl-green) !important;
+}
+
+/* The logo slot holds Proteus's unfilled template placeholder:
+       <a class="navbar-brand" href="https://yourdomain.com/">
+         <img src="https://yourdomain.com/wp-content/uploads/2022/10/VHSlogo@2x.png">
+   — a broken image, and a link to a site that doesn't exist.
+
+   Hide the dead image, paint ours in, and make the dead link unclickable so a
+   customer at checkout can't tap through to a placeholder domain.
+
+   Every rule keys off "yourdomain.com", so it heals itself: set the real logo
+   and site URL in Proteus and these stop applying, and theirs takes over. */
+html body a.navbar-brand img[src*="yourdomain.com"] {
+  display: none !important;
+}
+html body a.navbar-brand[href*="yourdomain.com"] {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+html body a.navbar-brand:has(img[src*="yourdomain.com"]) {
+  display: inline-block !important;
+  width: 150px !important;
+  height: 46px !important;
+  margin-left: 20px !important;
+  background: url("/images/logo.webp") left center / contain no-repeat !important;
+}
+
+/* ── SHOP NAV STRIP (location / search / account / cart) ──────────────────── */
+html body #shop_topnav,
+html body .shop-categories {
+  background: transparent !important;
+  color: var(--hl-muted) !important;
+}
+html body #shop_topnav .menu-link,
+html body #shop_topnav .menu-text,
+html body #shop_topnav a {
+  color: var(--hl-muted) !important;
+}
+html body #shop_topnav a:hover {
+  color: var(--hl-green) !important;
+}
+html body #shop_topnav .form-control {
+  background: var(--hl-bg-2) !important;
+  border: 1px solid var(--hl-line-2) !important;
+  color: var(--hl-white) !important;
+}
+html body #scquantity,
+html body .scquantity {
+  background: var(--hl-green) !important;
+  color: var(--hl-on-green) !important;
+}
+
+/* ── CARDS ────────────────────────────────────────────────────────────────── */
+/* Four wrappers — one per layout Proteus uses. Referred to as C below:
+     .minimal-checkout .checkout-content          sign-in, contact details
+     .modern-checkout-wrapper .checkout-container one of Proteus's layouts
+     .checkout-column.left                        order summary + payment
+     .checkout-container .checkout-box            contact details, empty cart */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) {
+  background: var(--hl-panel) !important;
+  border: 1px solid var(--hl-line-2) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45) !important;
+  color: var(--hl-white) !important;
+}
+/* The plain checkout-container around a checkout-box paints white on some
+   pages; the box is the card, so let the page show through the container. */
+html body .checkout-container {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ── SAFETY NET ───────────────────────────────────────────────────────────── */
+/* Every descendant of a card: light text AND a see-through background, set
+   TOGETHER, so the dark card always shows behind light text.
+
+   Why both, and why together: a first draft lightened text only. Proteus's grey
+   panels — the customer's name, the "your cell phone will be used…" note, and
+   the NO-RETURNS NOTICE — carry no class we can name, so they kept their light
+   grey background and measured 1.01:1 contrast. Invisible. On a dark theme that
+   is the failure that matters: unreadable text on a page taking an order, and
+   in this case a legal notice. Setting the background here too makes that
+   pairing impossible. Anything that should stand out (buttons, the active tab,
+   inputs, the discount tag) is restored explicitly below.
+
+   -webkit-text-fill-color: one Proteus layout draws headings as gradient-
+   clipped TRANSPARENT text. With the gradient cleared here, that text would
+   vanish unless its fill follows the colour. */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) * {
+  color: var(--hl-white) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: var(--hl-line) !important;
+}
+
+/* ── HEADINGS ─────────────────────────────────────────────────────────────── */
+/* "Welcome Back", "Checkout", "Order Summary", "Payment Method" */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.checkout-header h1, .section-header) {
+  font-family: var(--hl-groovy) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.005em !important;
+  color: var(--hl-white) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) .checkout-header p {
+  color: var(--hl-muted) !important;
+  opacity: 1 !important;
+}
+/* Proteus's blue-gradient header: the net already cleared its background; this
+   is the sheen overlay drawn on top of it. */
+html body .modern-checkout-wrapper .checkout-header::before {
+  display: none !important;
+}
+/* Their green rule under section headings, in our green. */
+html body :is(.checkout-column.left) .section-header {
+  border-bottom: 2px solid var(--hl-green) !important;
+}
+/* "👤 Contact Information" */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) .section-title {
+  border-bottom: 1px solid var(--hl-line-2) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.section-title i, .checkout-header i) {
+  color: var(--hl-green) !important;
+}
+
+/* ── INFO PANELS ──────────────────────────────────────────────────────────── */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) .info-box {
+  background-color: rgba(243, 247, 241, 0.045) !important;
+  border: 1px solid var(--hl-line-2) !important;
+  color: var(--hl-muted) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) .info-box * {
+  color: var(--hl-muted) !important;
+}
+/* "Discounts and payments will be applied at the counter." */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) .discountdisclaimer {
+  color: var(--hl-muted) !important;
+}
+
+/* ── FORM FIELDS ──────────────────────────────────────────────────────────── */
+/* Proteus wraps each label+input in a .field with a 1px border drawn WHITE —
+   invisible on its white card. The safety net recolours every border to a faint
+   line, which exposed a box around every label that Proteus never meant to show.
+   The net can't tell a light-grey border meant to be seen from a white one meant
+   to disappear, so this one is put back by name. */
+html body :is(.minimal-checkout .checkout-content) .field {
+  border-color: transparent !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box)
+  :is(input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), select, textarea) {
+  background-color: var(--hl-bg-2) !important;
+  border: 1px solid var(--hl-line-2) !important;
+  color: var(--hl-white) !important;
+  -webkit-text-fill-color: var(--hl-white) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box)
+  :is(input, select, textarea):focus {
+  border-color: var(--hl-green) !important;
+  box-shadow: 0 0 0 3px rgba(59, 232, 127, 0.18) !important;
+  outline: none !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(input, textarea)::placeholder {
+  color: rgba(169, 176, 160, 0.65) !important;
+  -webkit-text-fill-color: rgba(169, 176, 160, 0.65) !important;
+}
+
+/* ── SIGN-IN TABS ─────────────────────────────────────────────────────────── */
+html body :is(.minimal-checkout .checkout-content) .auth-pill {
+  border: 1px solid var(--hl-line-2) !important;
+  color: var(--hl-muted) !important;
+}
+html body :is(.minimal-checkout .checkout-content) .auth-pill:hover {
+  border-color: var(--hl-green) !important;
+  background-color: rgba(59, 232, 127, 0.06) !important;
+  color: var(--hl-white) !important;
+}
+html body :is(.minimal-checkout .checkout-content) .auth-pill.active {
+  background-color: var(--hl-green) !important;
+  border-color: var(--hl-green) !important;
+  color: var(--hl-on-green) !important;
+  font-weight: 700 !important;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+/* "Quick Login", "Proceed to Payment", "Complete Order" — the shop's own green. */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.btn-submit, .btn-primary, .button) {
+  background-color: var(--hl-green) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: var(--hl-on-green) !important;
+  font-family: var(--hl-groovy) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 8px 28px rgba(59, 232, 127, 0.22) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.btn-submit, .btn-primary, .button) * {
+  color: var(--hl-on-green) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.btn-submit, .btn-primary, .button):hover {
+  background-color: #52f08f !important;
+  box-shadow: 0 10px 34px rgba(59, 232, 127, 0.34) !important;
+}
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box) :is(.btn-submit, .btn-primary, .button):focus-visible {
+  outline: 2px solid var(--hl-white) !important;
+  outline-offset: 3px !important;
+}
+
+/* ── ORDER SUMMARY TABLE ──────────────────────────────────────────────────── */
+html body :is(.checkout-column.left) .order-review-table thead th {
+  background-color: var(--hl-bg-2) !important;
+  color: var(--hl-muted) !important;
+  border-bottom: 1px solid var(--hl-line-2) !important;
+}
+html body :is(.checkout-column.left) .order-review-table td.checkouttext_bottom {
+  background-color: var(--hl-panel-2) !important;
+}
+/* Prices: green for what they pay, muted and struck through for what it was. */
+html body :is(.checkout-column.left) .order-review-table :is(td.checkoutlinetotal, .price-sale) {
+  color: var(--hl-green) !important;
+  font-weight: 700 !important;
+}
+html body :is(.checkout-column.left) .order-review-table .price-original {
+  color: var(--hl-muted) !important;
+  opacity: 0.75 !important;
+  text-decoration: line-through !important;
+}
+/* The discount tag under a line item ("15% off"). Proteus draws a grey pill,
+   which on the dark card reads as a smudge — make it a green tag instead. */
+html body :is(.checkout-column.left) .order-review-table :is(.badge, .deal-card-discount) {
+  background-color: rgba(59, 232, 127, 0.12) !important;
+  border: 1px solid rgba(59, 232, 127, 0.45) !important;
+  color: var(--hl-green) !important;
+}
+html body :is(.checkout-column.left) .order-review-table :is(.badge, .deal-card-discount) * {
+  color: var(--hl-green) !important;
+}
+
+/* ── LINKS ────────────────────────────────────────────────────────────────── */
+html body :is(.minimal-checkout .checkout-content,
+              .modern-checkout-wrapper .checkout-container,
+              .checkout-column.left,
+              .checkout-container .checkout-box)
+  a:not(.btn-submit):not(.btn-primary):not(.button):not(.auth-pill) {
+  color: var(--hl-green) !important;
+}
+html body #continue_shop,
+html body #continue_shop * {
+  color: var(--hl-green) !important;
+}
+
+/* ── NOTES ────────────────────────────────────────────────────────────────── */
+/* Where the site asks online shoppers to put their pickup time. */
+html body :is(.checkout-column.left) .notes-section {
+  border-top-color: var(--hl-line-2) !important;
+}
+
+/* ── "OTHER CUSTOMERS ALSO PURCHASED" ─────────────────────────────────────── */
+/* Sits outside the card, so the safety net doesn't reach it — and Proteus
+   paints these as white cards. Styled explicitly so they don't glare. */
+html body .container > h4.relateditemstitle {
+  color: var(--hl-white) !important;
+  font-family: var(--hl-groovy) !important;
+  border-bottom-color: var(--hl-green) !important;
+}
+html body .container .row .relatedproducts {
+  background: var(--hl-panel) !important;
+  border: 1px solid var(--hl-line-2) !important;
+}
+html body .container .row .relatedproducts a:not(.product-image) {
+  color: var(--hl-white) !important;
+}
+html body .container .row .relatedproducts span:not(.related-price) {
+  color: var(--hl-muted) !important;
+}
+html body .container .row .relatedproducts .related-price {
+  color: var(--hl-green) !important;
+}
