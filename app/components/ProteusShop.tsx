@@ -9,6 +9,7 @@ import ProteusConfigFix from "./ProteusConfigFix";
 import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
 import KioskQuickAuth from "./KioskQuickAuth";
+import KioskAuthTrace from "./KioskAuthTrace";
 
 /**
  * Embeds Proteus's JSCart widget (the store's real cart / checkout / delivery /
@@ -229,6 +230,10 @@ export default function ProteusShop({
           Checkout?" screen is skipped — most customers here have a passwordless
           in-store account and cannot be expected to know which door is theirs. */}
       {kiosk && <KioskQuickAuth />}
+      {/* TEMPORARY: records what Proteus's quick login returns and what leaves in
+          the checkout POST, to settle the first-time-customer double sign-in.
+          Silent — the panel only appears with ?diag=1. Comes out when we know. */}
+      {kiosk && <KioskAuthTrace />}
       {/* Offers a way forward when someone registers an email that already exists in
           Proteus from an in-store visit. */}
       <AccountLinkPrompt />
