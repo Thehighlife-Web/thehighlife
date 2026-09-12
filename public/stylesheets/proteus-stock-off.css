@@ -1,8 +1,0 @@
-/* Intentionally empty.
- *
- * Proteus's checkout pages link https://thehighlifeny.com/stylesheets/proteus-shop-custom.css.
- * While PROTEUS_STOCK is on (data/proteus-stock.ts), next.config.ts rewrites that
- * address to this file, so their checkout shows Proteus's own stock look.
- * The real skin is untouched in proteus-shop-custom.css and returns when the
- * switch is turned off.
- */

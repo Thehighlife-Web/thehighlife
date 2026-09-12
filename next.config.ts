@@ -41,22 +41,9 @@ const nextConfig: NextConfig = {
       { source: "/kiosk/:path*", destination: PROTEUS_KIOSK_URL, permanent: false },
     ];
   },
-  async rewrites() {
-    if (!PROTEUS_STOCK) return { beforeFiles: [], afterFiles: [], fallback: [] };
-    return {
-      // Proteus's checkout pages link our dark checkout skin at this address.
-      // Serve an empty stylesheet there instead, so they show Proteus's own look.
-      // beforeFiles, because files in public/ win over ordinary rewrites.
-      beforeFiles: [
-        {
-          source: "/stylesheets/proteus-shop-custom.css",
-          destination: "/stylesheets/proteus-stock-off.css",
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
+  // The checkout skin obeys the same switch, but not from here: see
+  // app/stylesheets/proteus-shop-custom.css/route.ts. (A rewrite can't do it on
+  // Netlify, which serves public/ files before Next's routing runs.)
   async headers() {
     const robots = PREVIEW ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] : [];
     return [

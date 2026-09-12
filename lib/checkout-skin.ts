@@ -1,4 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap");
+/**
+ * The dark High Life skin for Proteus's hosted checkout pages.
+ *
+ * Served at /stylesheets/proteus-shop-custom.css by
+ * app/stylesheets/proteus-shop-custom.css/route.ts, only while the stock-Proteus
+ * switch in data/proteus-stock.ts is OFF. It lived in public/ until a live check
+ * showed Netlify serves public/ files before any Next routing, so it could not
+ * obey the switch there.
+ *
+ * Edit the CSS freely, with two rules: no backtick characters, and no dollar sign
+ * followed by an opening brace. Either would end or break this template string.
+ * String.raw keeps backslashes exactly as written.
+ */
+export const CHECKOUT_SKIN_CSS = String.raw`@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap");
 
 /* ════════════════════════════════════════════════════════════════════════════
    THE HIGH LIFE — skin for Proteus's hosted checkout
@@ -23,11 +36,11 @@
    every rule !important — so a normal rule here loses every tie.
 
    So every rule is !important (which also beats Proteus's inline style=""),
-   and prefixed `html body` for an extra (0,0,2) of specificity — enough to
+   and prefixed 'html body' for an extra (0,0,2) of specificity — enough to
    outrank their rules outright rather than relying on load order, where this
    file would lose.
 
-   Inside the checkout cards, rules are written `html body :is(C) <thing>`,
+   Inside the checkout cards, rules are written 'html body :is(C) <thing>',
    where C is the list of card wrappers. :is() takes its most specific argument
    — (0,2,0) — which puts every deliberate style at (0,3,2) or above, strictly
    over the SAFETY NET at (0,2,2). Don't shorten a selector to drop the :is(C)
@@ -89,7 +102,7 @@ html body .modern-auth-wrapper {
 /* Proteus writes this bar's colour INLINE, from an account setting:
        <nav class="navbar" style="background-color:#4b4b4b!important;">
    An inline !important declaration outranks every stylesheet rule — there is no
-   selector strong enough, so `background` below simply loses to it.
+   selector strong enough, so 'background' below simply loses to it.
 
    The way round: an INSET box-shadow is painted above an element's background
    but below its content. Proteus sets no shadow inline, so this one applies —
@@ -448,3 +461,4 @@ html body .container .row .relatedproducts span:not(.related-price) {
 html body .container .row .relatedproducts .related-price {
   color: var(--hl-green) !important;
 }
+`;
