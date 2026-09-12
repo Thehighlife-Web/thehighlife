@@ -725,29 +725,29 @@
   #proteus_shop .proteus-wishlist-btn{color:var(--hlc-muted)!important}
 
   /* JSCart auth/login modal — renders on <body>, so skinned outside #proteus_shop */
-  .proteus-modal-overlay .proteus-modal,
-  .proteus-modal-overlay .proteus-auth-panel,
-  .proteus-modal-overlay .proteus-auth-modal{
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-modal,
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-auth-panel,
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-auth-modal{
     background:#141a14!important;color:#f1f5ef!important;
     border:1px solid rgba(233,244,233,.12)!important;border-radius:16px!important}
-  .proteus-modal-overlay .proteus-modal-header,
-  .proteus-modal-overlay .proteus-choice-title,
-  .proteus-modal-overlay h2,.proteus-modal-overlay h3{color:#f1f5ef!important}
-  .proteus-modal-overlay .proteus-form-label{color:#9aa89d!important}
-  .proteus-modal-overlay .proteus-form-input{
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-modal-header,
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-choice-title,
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay h2,:where(html:not([data-proteus-stock])) .proteus-modal-overlay h3{color:#f1f5ef!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-form-label{color:#9aa89d!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-form-input{
     background:#0b0e0b!important;color:#f1f5ef!important;
     border:1px solid rgba(233,244,233,.14)!important;border-radius:10px!important}
-  .proteus-modal-overlay .proteus-form-input::placeholder{color:#67746c!important}
-  .proteus-modal-overlay .proteus-auth-tab{color:#9aa89d!important}
-  .proteus-modal-overlay .proteus-auth-tab.active{color:#3ecf7a!important;border-bottom-color:#3ecf7a!important}
-  .proteus-modal-overlay .proteus-login-btn{
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-form-input::placeholder{color:#67746c!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-auth-tab{color:#9aa89d!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-auth-tab.active{color:#3ecf7a!important;border-bottom-color:#3ecf7a!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-login-btn{
     background:#3ecf7a!important;color:#08120b!important;border:none!important;border-radius:10px!important;font-weight:700}
-  .proteus-modal-overlay .proteus-choice-btn{
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-choice-btn{
     background:#1c261c!important;color:#f1f5ef!important;
     border:1px solid rgba(233,244,233,.12)!important;border-radius:12px!important}
-  .proteus-modal-overlay .proteus-modal-close{color:#9aa89d!important}
-  .proteus-modal-overlay .proteus-login-footer a,
-  .proteus-modal-overlay .proteus-forgot-help a{color:#3ecf7a!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-modal-close{color:#9aa89d!important}
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-login-footer a,
+  :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-forgot-help a{color:#3ecf7a!important}
 
   .reveal{opacity:0;transform:translateY(38px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}

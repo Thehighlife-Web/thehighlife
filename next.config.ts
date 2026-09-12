@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { PROTEUS_STOCK, PROTEUS_KIOSK_URL } from "./data/proteus-stock";
 
 /**
  * Security + indexing headers live HERE, not in netlify.toml.
@@ -25,6 +26,37 @@ const baseSecurity = [
 ];
 
 const nextConfig: NextConfig = {
+  // ── Stock-Proteus switch (data/proteus-stock.ts) ─────────────────────────────
+  // Both of these return nothing when the switch is off.
+  async redirects() {
+    if (!PROTEUS_STOCK) return [];
+    return [
+      // Tablets open thehighlifeny.com/kiosk; send them to Proteus's own kiosk
+      // without anyone touching a tablet.
+      //
+      // permanent: false = 307. NEVER 308 here: a permanent redirect is cached by
+      // the tablet's browser forever, so switching back would not bring the
+      // tablets home.
+      { source: "/kiosk", destination: PROTEUS_KIOSK_URL, permanent: false },
+      { source: "/kiosk/:path*", destination: PROTEUS_KIOSK_URL, permanent: false },
+    ];
+  },
+  async rewrites() {
+    if (!PROTEUS_STOCK) return { beforeFiles: [], afterFiles: [], fallback: [] };
+    return {
+      // Proteus's checkout pages link our dark checkout skin at this address.
+      // Serve an empty stylesheet there instead, so they show Proteus's own look.
+      // beforeFiles, because files in public/ win over ordinary rewrites.
+      beforeFiles: [
+        {
+          source: "/stylesheets/proteus-shop-custom.css",
+          destination: "/stylesheets/proteus-stock-off.css",
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     const robots = PREVIEW ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] : [];
     return [

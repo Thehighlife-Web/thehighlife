@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import ProteusShop from "../components/ProteusShop";
 import DealsLinkBridge from "../components/DealsLinkBridge";
+import { PROTEUS_STOCK } from "@/data/proteus-stock";
 
 export const metadata: Metadata = {
   title: "Deals | The High Life Dispensary",
@@ -15,6 +16,11 @@ export const metadata: Metadata = {
  * "Today's Deals" section (the `.deals-only` CSS in globals.css hides the rest of
  * the shop chrome). This renders the store's actual deals directly from JSCart —
  * reliable, always current, and clickable — instead of custom cards.
+ *
+ * While running stock Proteus (data/proteus-stock.ts) the `.deals-only` rules
+ * don't match the stock container, so this shows the full stock shop, and deal
+ * cards filter it in place the way Proteus built them — which is why the link
+ * bridge is off too.
  */
 export default function DealsPage() {
   return (
@@ -35,7 +41,7 @@ export default function DealsPage() {
           </p>
 
           <div className="deals-only">
-            <DealsLinkBridge />
+            {!PROTEUS_STOCK && <DealsLinkBridge />}
             <ProteusShop />
           </div>
 

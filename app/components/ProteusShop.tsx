@@ -10,6 +10,7 @@ import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
 import KioskQuickAuth from "./KioskQuickAuth";
 import KioskAuthTrace from "./KioskAuthTrace";
+import { PROTEUS_STOCK } from "@/data/proteus-stock";
 
 /**
  * Embeds Proteus's JSCart widget (the store's real cart / checkout / delivery /
@@ -23,6 +24,9 @@ import KioskAuthTrace from "./KioskAuthTrace";
  * Recipe reverse-engineered from the live embed on thehighlifeny.com/shop.
  */
 export const WIDGET_SRC = "https://cart.thehighlifeny.com/cart-widget.js.cfm?v=4";
+
+/** Container used while running stock Proteus (data/proteus-stock.ts). */
+const STOCK_CONTAINER_ID = "proteus_stock";
 
 // The widget attaches a global; it's untyped.
 declare global {
@@ -105,6 +109,20 @@ export default function ProteusShop({
 
     const init = () => {
       if (!window.ProteusWidget) return;
+      if (PROTEUS_STOCK) {
+        // Stock: Proteus's own embed recipe and nothing else. Every other option is
+        // left at JSCart's defaults — light theme, "Shop Products", their checkout
+        // address, their sign-in screens, guest checkout as their server allows.
+        // See data/proteus-stock.ts.
+        document.documentElement.setAttribute("data-proteus-stock", "");
+        window.ProteusWidget.init({
+          client: "highlife",
+          mode: "full",
+          containerId: STOCK_CONTAINER_ID,
+        });
+        maybeOpenAction(); // keeps the site nav's Sign In / Cart buttons working
+        return;
+      }
       window.ProteusWidget.init({
         client: "highlife",
         mode: "full",
@@ -209,6 +227,13 @@ export default function ProteusShop({
     script.onload = init;
     document.body.appendChild(script);
   }, []);
+
+  if (PROTEUS_STOCK) {
+    // A different id on purpose: every brand-skin rule in globals.css is scoped to
+    // #proteus_shop, so a stock container matches none of them and nothing had to
+    // be deleted. None of our patch components mount either.
+    return <div id={STOCK_CONTAINER_ID} />;
+  }
 
   return (
     <>

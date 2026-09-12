@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import ProteusShop from "../components/ProteusShop";
 import MenuDealsMore from "../components/MenuDealsMore";
+import { PROTEUS_STOCK } from "@/data/proteus-stock";
 
 export const metadata: Metadata = {
   title: "Menu | The High Life Dispensary",
@@ -24,7 +25,8 @@ export default function MenuPage() {
 
       <section className="page">
         <div className="wrap order-wrap">
-          <MenuDealsMore />
+          {/* Our "View All Deals" button — off while running stock Proteus. */}
+          {!PROTEUS_STOCK && <MenuDealsMore />}
           <ProteusShop />
         </div>
       </section>
