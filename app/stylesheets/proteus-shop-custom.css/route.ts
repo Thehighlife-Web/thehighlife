@@ -1,4 +1,4 @@
-import { PROTEUS_STOCK } from "@/data/proteus-stock";
+import { PROTEUS_STOCK_WEBSITE } from "@/data/proteus-stock";
 import { CHECKOUT_SKIN_CSS } from "@/lib/checkout-skin";
 
 /**
@@ -15,15 +15,15 @@ import { CHECKOUT_SKIN_CSS } from "@/lib/checkout-skin";
  * by Next, so it can obey the stock-Proteus switch.
  *
  * ── WHAT IT SERVES ───────────────────────────────────────────────────────────
- *   PROTEUS_STOCK true   an empty stylesheet — Proteus's checkout shows its own look
- *   PROTEUS_STOCK false  the dark High Life checkout skin (lib/checkout-skin.ts)
+ *   PROTEUS_STOCK_WEBSITE true   an empty stylesheet — Proteus's checkout shows its own look
+ *   PROTEUS_STOCK_WEBSITE false  the dark High Life checkout skin (lib/checkout-skin.ts)
  *
  * Content-Type must be text/css: next.config.ts sends X-Content-Type-Options:
  * nosniff on every path, and under nosniff a browser refuses a stylesheet with
  * any other type.
  */
 export function GET() {
-  const body = PROTEUS_STOCK
+  const body = PROTEUS_STOCK_WEBSITE
     ? "/* Stock Proteus is switched on (data/proteus-stock.ts) — no checkout skin. */\n"
     : CHECKOUT_SKIN_CSS;
 

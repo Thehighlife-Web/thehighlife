@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { PROTEUS_STOCK, PROTEUS_KIOSK_URL } from "./data/proteus-stock";
+import { PROTEUS_STOCK_KIOSK, PROTEUS_KIOSK_URL } from "./data/proteus-stock";
 
 /**
  * Security + indexing headers live HERE, not in netlify.toml.
@@ -27,9 +27,9 @@ const baseSecurity = [
 
 const nextConfig: NextConfig = {
   // ── Stock-Proteus switch (data/proteus-stock.ts) ─────────────────────────────
-  // Both of these return nothing when the switch is off.
+  // Kiosk switch. Returns nothing when it is off.
   async redirects() {
-    if (!PROTEUS_STOCK) return [];
+    if (!PROTEUS_STOCK_KIOSK) return [];
     return [
       // Tablets open thehighlifeny.com/kiosk; send them to Proteus's own kiosk
       // without anyone touching a tablet.

@@ -10,7 +10,7 @@ import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
 import KioskQuickAuth from "./KioskQuickAuth";
 import KioskAuthTrace from "./KioskAuthTrace";
-import { PROTEUS_STOCK } from "@/data/proteus-stock";
+import { PROTEUS_STOCK_KIOSK, PROTEUS_STOCK_WEBSITE } from "@/data/proteus-stock";
 
 /**
  * Embeds Proteus's JSCart widget (the store's real cart / checkout / delivery /
@@ -52,6 +52,8 @@ export default function ProteusShop({
   kioskTimeout?: number;
 } = {}) {
   const started = useRef(false);
+  // The kiosk and the website have separate switches (data/proteus-stock.ts).
+  const stock = kiosk ? PROTEUS_STOCK_KIOSK : PROTEUS_STOCK_WEBSITE;
 
   // The site sets `scroll-behavior: smooth` on <html> (for homepage anchor
   // jumps). On this page the widget lazy-loads dozens of product images, and
@@ -109,7 +111,7 @@ export default function ProteusShop({
 
     const init = () => {
       if (!window.ProteusWidget) return;
-      if (PROTEUS_STOCK) {
+      if (stock) {
         // Stock: Proteus's own embed recipe and nothing else. Every other option is
         // left at JSCart's defaults — light theme, "Shop Products", their checkout
         // address, their sign-in screens, guest checkout as their server allows.
@@ -228,7 +230,7 @@ export default function ProteusShop({
     document.body.appendChild(script);
   }, []);
 
-  if (PROTEUS_STOCK) {
+  if (stock) {
     // A different id on purpose: every brand-skin rule in globals.css is scoped to
     // #proteus_shop, so a stock container matches none of them and nothing had to
     // be deleted. None of our patch components mount either.

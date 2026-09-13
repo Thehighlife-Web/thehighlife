@@ -3,7 +3,7 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import ProteusShop from "../components/ProteusShop";
 import DealsLinkBridge from "../components/DealsLinkBridge";
-import { PROTEUS_STOCK } from "@/data/proteus-stock";
+import { PROTEUS_STOCK_WEBSITE } from "@/data/proteus-stock";
 
 export const metadata: Metadata = {
   title: "Deals | The High Life Dispensary",
@@ -41,7 +41,7 @@ export default function DealsPage() {
           </p>
 
           <div className="deals-only">
-            {!PROTEUS_STOCK && <DealsLinkBridge />}
+            {!PROTEUS_STOCK_WEBSITE && <DealsLinkBridge />}
             <ProteusShop />
           </div>
 
