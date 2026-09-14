@@ -349,13 +349,13 @@ export type DealOfTheDay = {
 };
 
 export const dealOfTheDay: DealOfTheDay | null = {
-  title: "Jeeter 1g Pre-Rolls",
-  offer: "Buy One, Get One",
-  offerShort: "B1G1",
-  // Proteus coupon #94, "Jeeter 1g pre roll B1G1" — confirmed live, with products.
-  href: "/menu#view=products&coupon=94",
-  // Friday 11 September 2026, 9:00 PM Eastern.
-  endsAt: "2026-09-11T21:00:00-04:00",
+  title: "100mg Nano Shot",
+  offer: "B1G1 for a Penny",
+  offerShort: "B1G1 1¢",
+  // Proteus coupon #95, "B1G1 100mg shot" — Green Revolution Chill Nano Shot MAX.
+  href: "/menu#view=products&coupon=95",
+  // Monday 14 September 2026, 9:00 PM Eastern.
+  endsAt: "2026-09-14T21:00:00-04:00",
   endsLabel: "9 PM",
 };
 
