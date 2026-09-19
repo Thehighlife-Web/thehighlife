@@ -318,21 +318,27 @@ export function categoryMenuHref(slug: string): string {
 }
 
 /**
- * DEAL OF THE DAY — the bar across the top of every page (components/DealBanner).
+ * DEALS OF THE DAY — the strip across the top of every page (components/DealBanner).
  *
- * To run a new one, edit this object. To run none, set it to null.
+ * List one deal and it shows as a still strip. List two or more and they take
+ * turns in the same strip, one every few seconds; it pauses under a finger or
+ * cursor so nobody taps the wrong one. To run none, leave the list empty.
  *
- * `endsAt` is a hard stop: the bar is not rendered after it, and a page already
- * open when it passes removes the bar on the spot — so nothing needs to be taken
- * down by hand, and the site can never advertise a deal that has ended. Write it
- * with the Eastern offset spelled out: -04:00 in summer (EDT), -05:00 in winter
- * (EST). A bare "2026-09-11T21:00" would be read in the VISITOR's timezone.
+ * `endsAt` is a hard stop PER DEAL: a deal is not rendered after it, and a page
+ * already open when it passes drops that deal on the spot — so nothing needs to
+ * be taken down by hand, and the site can never advertise a deal that has ended.
+ * When the last one ends, the strip disappears. Write it with the Eastern offset
+ * spelled out: -04:00 in summer (EDT), -05:00 in winter (EST). A bare
+ * "2026-09-11T21:00" would be read in the VISITOR's timezone.
  *
  * `href` should be the deal's own coupon in the menu, so the tap lands on the
  * products the deal actually applies to. The number is the Proteus coupon id,
  * from https://cart.proteus420.com/highlife/api_cart_v2.cfm?action=deals.
  * Check the deal exists there before advertising it — a promotion the checkout
  * won't apply is worse than no promotion.
+ *
+ * `offerShort` is what phones show. Keep title + offerShort short: at 320px wide
+ * a single deal line has only a few pixels to spare.
  */
 export type DealOfTheDay = {
   /** product line, as a customer would say it */
@@ -348,16 +354,29 @@ export type DealOfTheDay = {
   endsLabel: string;
 };
 
-export const dealOfTheDay: DealOfTheDay | null = {
-  title: "Miss Grass Pre-Roll",
-  offer: "Buy 1 Get 1",
-  offerShort: "B1G1",
-  // Proteus coupon #99, "Miss grass Spark pre rolls B1G1" — Miss Grass Sparks 0.4g.
-  href: "/menu#view=products&coupon=99",
-  // Saturday 19 September 2026, 9:00 PM Eastern.
-  endsAt: "2026-09-19T21:00:00-04:00",
-  endsLabel: "9 PM",
-};
+export const dealsOfTheDay: DealOfTheDay[] = [
+  {
+    title: "Miss Grass Pre-Roll",
+    offer: "Buy 1 Get 1",
+    offerShort: "B1G1",
+    // Proteus coupon #99, "Miss grass Spark pre rolls B1G1" — Miss Grass Sparks 0.4g.
+    href: "/menu#view=products&coupon=99",
+    // Saturday 19 September 2026, 9:00 PM Eastern.
+    endsAt: "2026-09-19T21:00:00-04:00",
+    endsLabel: "9 PM",
+  },
+  {
+    title: "Grassroots",
+    offer: "Buy 7g Get an 8th",
+    offerShort: "7g + 8th",
+    // Proteus coupon #101, "Grassroots Buy 7g Get an 8th" — Grassroots x Dark Heart
+    // Moonbeam Gelato 7g, the only product on the coupon.
+    href: "/menu#view=products&coupon=101",
+    // Saturday 19 September 2026, 9:00 PM Eastern.
+    endsAt: "2026-09-19T21:00:00-04:00",
+    endsLabel: "9 PM",
+  },
+];
 
 /**
  * Shown on the homepage (components/Stats.tsx) and /about — both read this list,

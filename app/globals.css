@@ -137,7 +137,12 @@
   }
   /* The whole bar is the link, so the arrow is the one thing it can spare. */
   @media(max-width:340px){.dealbar-cta{display:none}}
-  @media(prefers-reduced-motion:reduce){.dealbar-dot{animation:none}}
+  /* Several deals take turns (DealBanner). Only the CONTENTS fade in on a swap,
+     never the bar itself — its background stays put, so nothing behind it flashes. */
+  .dealbar-rotating > *{animation:dealswap .45s ease-out}
+  @keyframes dealswap{from{opacity:0}to{opacity:1}}
+  .dealbar-count{opacity:.62}
+  @media(prefers-reduced-motion:reduce){.dealbar-dot,.dealbar-rotating > *{animation:none}}
 
   /* hero */
   .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(20px,5vw,54px);overflow:hidden}
