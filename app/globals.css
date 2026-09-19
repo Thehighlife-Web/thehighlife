@@ -941,16 +941,36 @@
   @media(max-width:960px){
     .deals-band-grid{grid-template-columns:1fr}
   }
+  /* Right column: the featured deal, and a small row of the other deals under it. */
+  .dealfeature-col{display:flex;flex-direction:column;gap:14px;width:100%;max-width:600px;
+    justify-self:end;min-width:0}
+  @media(max-width:960px){.dealfeature-col{justify-self:start}}
   /* The featured deal (Deals.tsx, pickFeaturedDeal in lib/deals.ts): one picture,
-     the deal's own 16:9 artwork from Proteus, linking to that deal's products. */
-  .dealfeature{display:block;width:100%;max-width:600px;justify-self:end;aspect-ratio:16/9;overflow:hidden;
+     the deal's own 16:9 artwork from Proteus, linking to that deal's products.
+     position:relative because next/image's `fill` positions the img inside it. */
+  .dealfeature{position:relative;display:block;width:100%;aspect-ratio:16/9;overflow:hidden;
     border-radius:20px;border:1px solid var(--line-2);background:var(--panel);
     box-shadow:0 22px 56px rgba(0,0,0,.5);
     transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s}
   .dealfeature:hover{transform:translateY(-3px);border-color:var(--green-dim)}
-  .dealfeature img{width:100%;height:100%;object-fit:cover;display:block}
+  .dealfeature img{object-fit:cover}
   @media(prefers-reduced-motion:reduce){.dealfeature:hover{transform:none}}
-  @media(max-width:960px){.dealfeature{justify-self:start}}
+  /* The other deals (listOtherDeals): small 16:9 previews in one scrolling row.
+     overflow-x lives HERE so the page body never scrolls sideways. The scrollbar
+     is kept (thin, in brand green) on purpose: it's the only cue a mouse user gets
+     that the row scrolls; on phones the half-cut last preview says the same. */
+  .dealthumbs{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;min-width:0;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px;
+    scrollbar-width:thin;scrollbar-color:rgba(64,210,131,.5) transparent}
+  .dealthumbs::-webkit-scrollbar{height:6px}
+  .dealthumbs::-webkit-scrollbar-thumb{background:rgba(64,210,131,.5);border-radius:6px}
+  .dealthumbs::-webkit-scrollbar-track{background:transparent}
+  .dealthumb{position:relative;flex:0 0 auto;width:150px;aspect-ratio:16/9;scroll-snap-align:start;
+    overflow:hidden;border-radius:10px;border:1px solid var(--line-2);background:var(--panel);
+    transition:border-color .25s}
+  .dealthumb:hover,.dealthumb:focus-visible{border-color:var(--green)}
+  .dealthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  @media(max-width:520px){.dealthumb{width:128px}}
 
   /* ---------- homepage "on sale right now" rail ----------
      Cards reuse .prod/.prod-img/.prod-price wholesale; only the scroller is new. */

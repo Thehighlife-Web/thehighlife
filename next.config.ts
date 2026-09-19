@@ -26,6 +26,23 @@ const baseSecurity = [
 ];
 
 const nextConfig: NextConfig = {
+  // Proteus deal artwork on the homepage (components/Deals.tsx). The originals are
+  // full-size PNGs averaging ~1.8MB each (33 deals ≈ 57MB); next/image serves them
+  // at the size they're shown instead. Allow-listed as narrowly as the URLs allow:
+  // this host, this store's picture folder, no query strings.
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cloud.proteuserp.com",
+        port: "",
+        pathname: "/pictures/sites/highlife/**",
+        search: "",
+      },
+    ],
+    // Required from Next 16 (see node_modules/next/dist/docs, image.md → qualities).
+    qualities: [75],
+  },
   // ── Stock-Proteus switch (data/proteus-stock.ts) ─────────────────────────────
   // Kiosk switch. Returns nothing when it is off.
   async redirects() {
