@@ -1,10 +1,9 @@
-import { getShopDeals } from "@/lib/deals";
-import DealsRail from "./DealsRail";
+import { getShopDeals, pickFeaturedDeal } from "@/lib/deals";
 
 /**
- * Homepage deals section: a scrolling marquee + a bold teaser band that routes
- * to /deals (which pulls the REAL deals live from JSCart). No hand-kept deal
- * data lives here anymore — nothing to drift out of sync.
+ * Homepage deals section: a scrolling marquee + a bold band with ONE featured
+ * deal picture that routes into the menu. No hand-kept deal artwork lives here —
+ * the picture is the deal's own artwork, pulled live from Proteus.
  */
 
 export function Marquee() {
@@ -27,36 +26,33 @@ export function Marquee() {
   );
 }
 
-/** The homepage deals moment — big energy, honest copy, one route into /deals. */
+/**
+ * The homepage deals moment: the heading, the two ways in, and one big picture —
+ * the featured deal.
+ *
+ * Which deal is featured is decided per request by pickFeaturedDeal (lib/deals):
+ * the deal pinned in data/site.ts (`featuredDeal`) until its end time, then the
+ * NEWEST deal in Proteus that has a picture. So a new deal uploaded with artwork
+ * takes over on its own, and nothing here needs editing when a deal ends.
+ *
+ * If Proteus can't be reached there's no picture, and the band falls back to a
+ * single column — heading and buttons — rather than showing a broken image.
+ */
 export async function DealsBand() {
-  // Real deal artwork, fetched server-side so the homepage renders the tiles
-  // without pulling in the whole JSCart bundle. Empty on failure -> band just
-  // reads as it did before.
-  const deals = await getShopDeals();
+  const featured = pickFeaturedDeal(await getShopDeals());
+  const label = featured ? featured.name || featured.message || "this deal" : "";
 
   return (
     <section className="deals-band" id="deals">
-      <div className={`wrap${deals.length ? " deals-band-grid" : ""}`}>
+      <div className={`wrap${featured ? " deals-band-grid" : ""}`}>
         <div className="deals-band-copy">
-        <h2 className="reveal">
-          This Week&rsquo;s
-          <br />
-          Deals
-        </h2>
-        <p className="lead reveal">
-          We don&rsquo;t do markups — we do markdowns. BOGOs, bundles and fresh price drops across the
-          shop, pulled straight from the register so what you see is always what&rsquo;s live.
-        </p>
+          <h2 className="reveal">
+            This Week&rsquo;s
+            <br />
+            Deals
+          </h2>
 
-        <div className="deals-band-chips reveal" aria-hidden="true">
-          <span>BOGO</span>
-          <span>2 for $40</span>
-          <span>25% Off</span>
-          <span>Bundles</span>
-          <span>Grand-Opening Drops</span>
-        </div>
-
-        <div className="page-cta reveal">
+          <div className="page-cta reveal">
             <a className="btn primary" href="/deals">
               See This Week&rsquo;s Deals →
             </a>
@@ -66,7 +62,18 @@ export async function DealsBand() {
           </div>
         </div>
 
-        {deals.length > 0 && <DealsRail deals={deals} />}
+        {featured && (
+          <a
+            className="dealfeature"
+            href={`/menu#view=products&coupon=${featured.id}`}
+            aria-label={`Featured deal: ${label}. Shop it`}
+          >
+            {/* Proteus-hosted artwork; next/image would need their host allow-listed and
+                re-encodes nothing we control. Width/height reserve the 16:9 box. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={featured.image} alt={label} width={1600} height={900} loading="lazy" decoding="async" />
+          </a>
+        )}
       </div>
     </section>
   );

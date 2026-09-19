@@ -1,3 +1,5 @@
+import { dealsOfTheDay, featuredDeal } from "@/data/site";
+
 /**
  * The store's live coupon deals, straight from JSCart's public endpoint.
  *
@@ -29,9 +31,9 @@ const DEALS_URL = "https://cart.proteus420.com/highlife/api_cart_v2.cfm?action=d
 const REVALIDATE_SECONDS = 300;
 
 /**
- * Returns only deals that actually have artwork — this feeds an image slideshow,
- * and a gap in the rotation reads as a broken page. Never throws: the homepage
- * must render even if Proteus is unreachable (callers hide the slideshow on []).
+ * Returns only deals that actually have artwork — the homepage shows a deal as a
+ * picture, and a deal with none would be a blank box. Never throws: the homepage
+ * must render even if Proteus is unreachable (callers hide the picture on []).
  */
 export async function getShopDeals(): Promise<ShopDeal[]> {
   try {
@@ -43,4 +45,44 @@ export async function getShopDeals(): Promise<ShopDeal[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * The one deal the homepage features, from deals that already have artwork
+ * (getShopDeals):
+ *
+ *   1. The deal pinned in data/site.ts (`featuredDeal`), until its endsAt — as
+ *      long as Proteus still has it.
+ *   2. Otherwise the NEWEST deal: the highest coupon id. Proteus numbers deals in
+ *      the order they're created, so a deal uploaded today outranks last week's.
+ *
+ * Deals this site KNOWS have ended are skipped in both steps: the pin once its
+ * endsAt passes, and any deal-of-the-day strip entry (dealsOfTheDay) whose
+ * endsAt has passed. Without that, a deal that ended but was left switched on in
+ * Proteus would come straight back as "newest".
+ *
+ * Returns null when nothing qualifies — the band then shows no picture.
+ */
+export function pickFeaturedDeal(deals: ShopDeal[], now: number = Date.now()): ShopDeal | null {
+  const ended = new Set<number>();
+  for (const d of dealsOfTheDay) {
+    const coupon = d.href.match(/coupon=(\d+)/);
+    if (coupon && new Date(d.endsAt).getTime() <= now) ended.add(Number(coupon[1]));
+  }
+  if (featuredDeal && new Date(featuredDeal.endsAt).getTime() <= now) ended.add(featuredDeal.coupon);
+
+  const open = deals.filter((d) => !ended.has(Number(d.id)));
+
+  const pin = featuredDeal;
+  if (pin && !ended.has(pin.coupon)) {
+    const pinned = open.find((d) => Number(d.id) === pin.coupon);
+    if (pinned) return pinned;
+  }
+
+  let newest: ShopDeal | null = null;
+  for (const d of open) {
+    if (!Number.isFinite(Number(d.id))) continue;
+    if (!newest || Number(d.id) > Number(newest.id)) newest = d;
+  }
+  return newest;
 }

@@ -379,6 +379,26 @@ export const dealsOfTheDay: DealOfTheDay[] = [
 ];
 
 /**
+ * FEATURED DEAL — the one big picture in the homepage's "This Week's Deals" band
+ * (components/Deals.tsx, picked by pickFeaturedDeal in lib/deals.ts).
+ *
+ * Pin a deal here by its Proteus coupon id, with an end time. Until then the band
+ * shows that deal's own artwork from Proteus. After it ends — or if the deal is
+ * gone from Proteus, or has no picture — the band shows the NEWEST deal in Proteus
+ * that has a picture (the highest coupon id; Proteus numbers deals in the order
+ * they're created), skipping any deal this file says has ended. So a new deal
+ * uploaded with artwork takes over on its own.
+ *
+ * Set to null to always show the newest.
+ */
+export const featuredDeal: { coupon: number; endsAt: string } | null = {
+  // Grassroots Buy 7g Get an 8th — same end as its strip entry above.
+  coupon: 101,
+  // Tuesday 22 September 2026, 9:00 PM Eastern.
+  endsAt: "2026-09-22T21:00:00-04:00",
+};
+
+/**
  * Shown on the homepage (components/Stats.tsx) and /about — both read this list,
  * so a change here lands on both.
  *
