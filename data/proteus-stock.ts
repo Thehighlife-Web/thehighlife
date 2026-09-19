@@ -29,7 +29,7 @@
  * would NOT bring the tablets home. A 307 is asked about fresh every load.
  */
 export const PROTEUS_STOCK_WEBSITE = false;
-export const PROTEUS_STOCK_KIOSK = true;
+export const PROTEUS_STOCK_KIOSK = false;
 
 /** Proteus's hosted kiosk on the High Life domain. It sets its own checkoutUrl to
  *  its own origin, so sign-in and checkout stay on one host. */
