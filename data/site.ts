@@ -350,7 +350,7 @@ export type DealOfTheDay = {
   href: string;
   /** ISO timestamp WITH offset, e.g. "2026-09-11T21:00:00-04:00" */
   endsAt: string;
-  /** how the end is said aloud, e.g. "9 PM" */
+  /** how the end is said aloud: "9 PM" for tonight, or name the day for a deal that runs longer, e.g. "Tue 9/22, 9 PM" */
   endsLabel: string;
 };
 
@@ -372,9 +372,9 @@ export const dealsOfTheDay: DealOfTheDay[] = [
     // Proteus coupon #101, "Grassroots Buy 7g Get an 8th" — Grassroots x Dark Heart
     // Moonbeam Gelato 7g, the only product on the coupon.
     href: "/menu#view=products&coupon=101",
-    // Saturday 19 September 2026, 9:00 PM Eastern.
-    endsAt: "2026-09-19T21:00:00-04:00",
-    endsLabel: "9 PM",
+    // Tuesday 22 September 2026, 9:00 PM Eastern. Runs past today, so the label names the day.
+    endsAt: "2026-09-22T21:00:00-04:00",
+    endsLabel: "Tue 9/22, 9 PM",
   },
 ];
 

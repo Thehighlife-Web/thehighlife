@@ -54,12 +54,15 @@ const DEALS = dealsOfTheDay.map((d) => ({ ...d, end: new Date(d.endsAt).getTime(
 /** How long each deal stays up before the next one takes its turn. */
 const ROTATE_MS = 6000;
 
-/** "8h 59m", "45m", "under 1m" — minutes are the finest grain worth showing. */
+/** "3d 2h", "8h 59m", "45m", "under 1m". Past a day, minutes are noise — and
+ *  "74h 12m" is hard to read at a glance. */
 function remaining(ms: number) {
   const mins = Math.floor(ms / 60000);
   if (mins < 1) return "under 1m";
-  const h = Math.floor(mins / 60);
+  const d = Math.floor(mins / 1440);
+  const h = Math.floor((mins % 1440) / 60);
   const m = mins % 60;
+  if (d > 0) return `${d}d ${h}h`;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
@@ -115,7 +118,7 @@ export default function DealBanner() {
       key={d.href}
       className={rotating ? "dealbar dealbar-rotating" : "dealbar"}
       href={d.href}
-      aria-label={`Deal of the day${count}: ${d.title}, ${d.offer}. Today only, ends ${d.endsLabel}.`}
+      aria-label={`Deal of the day${count}: ${d.title}, ${d.offer}. Ends ${d.endsLabel}.`}
       onPointerEnter={() => setPaused(true)}
       onPointerDown={() => setPaused(true)}
       onPointerLeave={() => setPaused(false)}

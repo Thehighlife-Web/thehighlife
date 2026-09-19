@@ -137,6 +137,10 @@
   }
   /* The whole bar is the link, so the arrow is the one thing it can spare. */
   @media(max-width:340px){.dealbar-cta{display:none}}
+  /* Same idea at the narrow end of the LONG wording: a deal that runs past today
+     says "Ends Tue 9/22, 9 PM", and at 760px that overflowed by 12px and clipped
+     the end. Drop the words "Shop now" there and keep the arrow. */
+  @media(min-width:760px) and (max-width:899px){.dealbar-cta .dealbar-wide{display:none}}
   /* Several deals take turns (DealBanner). Only the CONTENTS fade in on a swap,
      never the bar itself — its background stays put, so nothing behind it flashes. */
   .dealbar-rotating > *{animation:dealswap .45s ease-out}
