@@ -372,9 +372,9 @@ export const dealsOfTheDay: DealOfTheDay[] = [
     // Proteus coupon #101, "Grassroots Buy 7g Get an 8th" — Grassroots x Dark Heart
     // Moonbeam Gelato 7g, the only product on the coupon.
     href: "/menu#view=products&coupon=101",
-    // Tuesday 22 September 2026, 9:00 PM Eastern. Runs past today, so the label names the day.
-    endsAt: "2026-09-22T21:00:00-04:00",
-    endsLabel: "Tue 9/22, 9 PM",
+    // Monday 21 September 2026, 9:00 PM Eastern (moved up from Tue 9/22 at the store's request).
+    endsAt: "2026-09-21T21:00:00-04:00",
+    endsLabel: "9 PM",
   },
 ];
 
@@ -394,8 +394,10 @@ export const dealsOfTheDay: DealOfTheDay[] = [
 export const featuredDeal: { coupon: number; endsAt: string } | null = {
   // Grassroots Buy 7g Get an 8th — same end as its strip entry above.
   coupon: 101,
-  // Tuesday 22 September 2026, 9:00 PM Eastern.
-  endsAt: "2026-09-22T21:00:00-04:00",
+  // Monday 21 September 2026, 9:00 PM Eastern. Only shows while coupon #101 is
+  // active in Proteus — on 9/21 it had been switched off there, so the band fell
+  // back to the newest deal until it's turned back on.
+  endsAt: "2026-09-21T21:00:00-04:00",
 };
 
 /**
