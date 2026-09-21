@@ -30,7 +30,9 @@ import ProteusShop from "./ProteusShop";
  *     filters" and reset the row to its featured landing. A popstate listener
  *     registered BEFORE the widget's own swallows those — only hashes the widget
  *     wrote (they carry "view=") reach it. Next.js's router listener is
- *     registered at hydration, before this one, so it's unaffected.
+ *     registered at hydration, before this one, so it's unaffected. If a product
+ *     pop-up is open when one of those Back steps lands, it's closed here, since
+ *     the widget won't hear about it.
  *
  *  4. NO DEAD BACK STEP. showOnSale() ends in pushState(); on first load that
  *     would add a history entry, so Back would appear to do nothing. It's made a
@@ -79,7 +81,15 @@ export default function OnSaleShop() {
     html.setAttribute("data-hl-onsale-savings", "");
 
     const onPop = (e: PopStateEvent) => {
-      if (!WIDGET_HASH.test(location.hash)) e.stopImmediatePropagation();
+      if (WIDGET_HASH.test(location.hash)) return;
+      e.stopImmediatePropagation();
+      // Back from a product pop-up to one of the homepage's own anchors (e.g. the
+      // shopper tapped "#deals", then a tile, then Back). The widget never sees
+      // this step, so its pop-up would stay open — close it on its behalf. Found in
+      // live testing; its close() swaps the address back without a history entry.
+      if (document.getElementById("proteus-product-modal")) {
+        window.ProteusWidget?.closeProductModal?.();
+      }
     };
     window.addEventListener("popstate", onPop);
 
