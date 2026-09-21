@@ -701,13 +701,26 @@
   /* 16:9 cards so 1920x1080 deal images display in full (scaled down in the grid) */
   .deals-only #proteus_shop .proteus-deal-card{aspect-ratio:16/9!important;height:auto!important}
   .deals-only #proteus_shop .proteus-deal-card{width:auto!important;min-width:0!important;flex:none!important}
-  /* deals WITH a real image: show just the picture (hide the discount/name text).
-     deals without an image (--no-image, a gradient) keep their text so they're not blank. */
-  .deals-only #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-content{display:none!important}
-  .deals-only #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg{position:absolute!important;inset:0!important}
-  .deals-only #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg img{width:100%!important;height:100%!important;object-fit:cover!important}
+  /* Deal cards WITH a real image: show just the picture — the artwork already says
+     the deal, and JSCart's text ("10% OFF", the name, "Shop Now") printed over it
+     was unreadable clutter. Deals without an image (--no-image, a gradient) keep
+     their text so they're not blank. JSCart also adds --no-image when a picture
+     fails to load, so a broken image falls back to the text on its own.
+     Everywhere the shop runs — /menu's "Today's Deals" row, the kiosk, /deals. The
+     whole card is the link (its onclick filters to the deal), so hiding the
+     "Shop Now" pill loses nothing. */
+  #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image){cursor:pointer}
+  #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-content{display:none!important}
+  #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg{position:absolute!important;inset:0!important}
+  #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg img{width:100%!important;height:100%!important;object-fit:cover!important}
   /* remove the dark dimming gradient over the deal images */
-  .deals-only #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg::after{display:none!important;background:none!important}
+  #proteus_shop .proteus-deal-card:not(.proteus-deal-card--no-image) .proteus-deal-card-bg::after{display:none!important;background:none!important}
+  /* Deal artwork is 16:9, but JSCart draws these cards 200x95 (2.1:1) — measured
+     on /menu — which trimmed the top and bottom of every picture once the text no
+     longer covered it ("ALL REVERT PRODUCTS", "10 PRE ROLL" were cut). Match the
+     artwork's shape so the whole picture shows. Applied to every deal card, text
+     ones included, so the row stays level. /deals already did this for its grid. */
+  #proteus_shop .proteus-deal-card{aspect-ratio:16/9!important;height:auto!important;min-height:0!important}
   #proteus_shop .proteus-product-name,#proteus_shop .proteus-deal-name,
   #proteus_shop .proteus-product-price-value,#proteus_shop .proteus-product-price{color:var(--hlc-ink)!important}
   #proteus_shop .proteus-product-brand{color:var(--hlc-yellow)!important}
