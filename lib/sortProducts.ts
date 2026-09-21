@@ -39,6 +39,27 @@ function shownPrice(p: SortableProduct): number | null {
 
 const collator = new Intl.Collator("en", { sensitivity: "base", numeric: true });
 
+/**
+ * Biggest saving first, in dollars (regular price minus the price on the card),
+ * ties in name order. Used for the homepage's "On Sale Right Now" row, which has
+ * always led with the biggest markdowns — Proteus has no such sort, so it's done
+ * here (see ProteusSortFix). Items with no computable saving go last.
+ */
+export function sortBySavings<T extends SortableProduct>(products: T[]): T[] {
+  const saving = (p: T) => {
+    const was = typeof p.price === "number" ? p.price : parseFloat(String(p.price ?? ""));
+    const now = shownPrice(p);
+    return Number.isFinite(was) && now !== null ? was - now : null;
+  };
+  return [...products].sort((a, b) => {
+    const sa = saving(a);
+    const sb = saving(b);
+    if (sa === null || sb === null) return sa === sb ? 0 : sa === null ? 1 : -1;
+    if (sb !== sa) return sb - sa;
+    return collator.compare((a.name ?? "").trim(), (b.name ?? "").trim());
+  });
+}
+
 /** Returns a NEW array in the right order; unknown sorts come back unchanged. */
 export function sortProducts<T extends SortableProduct>(products: T[], sortby: string): T[] {
   if (!FIXED_SORTS.has(sortby)) return products;

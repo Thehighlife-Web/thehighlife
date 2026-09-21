@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { FIXED_SORTS, sortProducts } from "@/lib/sortProducts";
+import { FIXED_SORTS, sortBySavings, sortProducts } from "@/lib/sortProducts";
 
 /**
  * Makes the menu's "Price" and "Name" sort options actually sort.
@@ -50,6 +50,14 @@ function sortOf(input: RequestInfo | URL): string | null {
     const url = new URL(raw, location.href);
     if (!/\/api_cart_v2\.cfm$/i.test(url.pathname)) return null;
     if (url.searchParams.get("action") !== "products") return null;
+    // The homepage's "On Sale Right Now" row (OnSaleShop) asks for biggest saving
+    // first by flagging <html>. Only on-sale lists, only while that flag is set.
+    if (
+      url.searchParams.get("onsale") === "1" &&
+      document.documentElement.hasAttribute("data-hl-onsale-savings")
+    ) {
+      return "savings";
+    }
     const sortby = url.searchParams.get("sortby");
     return sortby && FIXED_SORTS.has(sortby) ? sortby : null;
   } catch {
@@ -69,7 +77,8 @@ export default function ProteusSortFix() {
       try {
         const data = await res.clone().json();
         if (!data || !Array.isArray(data.products)) return res;
-        data.products = sortProducts(data.products, sortby);
+        data.products =
+          sortby === "savings" ? sortBySavings(data.products) : sortProducts(data.products, sortby);
         // The body is re-encoded, so the old length/encoding no longer describe it.
         const headers = new Headers(res.headers);
         headers.delete("content-length");

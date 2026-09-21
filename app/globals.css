@@ -973,28 +973,55 @@
   @media(max-width:520px){.dealthumb{width:128px}}
 
   /* ---------- homepage "on sale right now" rail ----------
-     Cards reuse .prod/.prod-img/.prod-price wholesale; only the scroller is new. */
+     Real JSCart tiles (components/OnSaleShop.tsx); the heading block is ours. */
   .onsale{border-bottom:1px solid var(--line)}
   .onsale-wrap{padding-top:clamp(56px,8vw,110px);padding-bottom:clamp(56px,8vw,110px)}
   .onsale-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
   .onsale-head h2{margin:0}
   .onsale-all{flex:0 0 auto}
   .onsale-lead{margin:18px 0 0;max-width:60ch;color:var(--muted);font-size:clamp(15px,1.7vw,18px);line-height:1.65}
-  /* The rail itself. overflow-x lives HERE so the page body never scrolls sideways.
-     Negative margins let cards bleed to the screen edge while keeping the wrap's
-     padding as the first card's inset — so it lines up with the heading above. */
-  .onsale-rail{display:flex;gap:16px;margin:30px calc(-1 * clamp(20px,5vw,54px)) 0;
-    padding:4px clamp(20px,5vw,54px) 14px;
-    overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;
-    -webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .onsale-rail::-webkit-scrollbar{display:none}
-  .onsale-card{flex:0 0 auto;width:clamp(190px,22vw,236px);scroll-snap-align:start}
-  .onsale-card .prod-name{
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .onsale-card .prod-foot{border-top:0;padding-top:4px}
+  @media(max-width:640px){.onsale-head{align-items:flex-start}}
+  /* The row: the FULL JSCart shop, mounted by OnSaleShop, with everything but the
+     product grid hidden and the grid turned into a horizontal scroller. Same idea as
+     .deals-only on /deals. overflow-x lives on the grid so the page body never
+     scrolls sideways.
+     ⚠️ Leave .proteus-powered-by alone: JSCart refuses to check out unless that
+     footer is visible and takes up space (isFooterVisible). */
+  .onsale-shop{position:relative;margin-top:30px;min-height:380px}
+  .onsale-shop.is-ready{min-height:0}
+  .onsale-shop-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    border:1px dashed var(--line-2);border-radius:16px}
+  /* Kept out of sight while the shop first draws its own landing page, then shown
+     once it has switched to the on-sale list — no flash of the wrong products. */
+  .onsale-shop:not(.is-ready) #proteus_shop{visibility:hidden!important;height:0!important;overflow:hidden!important}
+  .onsale-shop #proteus_shop{border:0!important;border-radius:0!important;background:transparent!important;
+    overflow:visible!important;min-height:0!important;padding:0!important}
+  .onsale-shop #proteus_shop .proteus-full-header,
+  .onsale-shop #proteus_shop .proteus-search-panel,
+  .onsale-shop #proteus_shop .proteus-sidebar,
+  .onsale-shop #proteus_shop .proteus-toolbar,
+  .onsale-shop #proteus_shop .proteus-mobile-categories,
+  .onsale-shop #proteus_shop .proteus-mobile-filter-btn,
+  .onsale-shop #proteus_shop .proteus-featured-header,
+  .onsale-shop #proteus_shop .proteus-nav-browsetitle,
+  .onsale-shop #proteus_shop .proteus-deals-section,
+  .onsale-shop #proteus_shop .proteus-deals-nav,
+  .onsale-shop #proteus_shop .proteus-deals-carousel,
+  .onsale-shop #proteus_shop .proteus-product-count{display:none!important}
+  .onsale-shop #proteus_shop .proteus-layout,
+  .onsale-shop #proteus_shop .proteus-main{display:block!important;padding:0!important;margin:0!important;
+    width:100%!important;min-height:0!important}
+  .onsale-shop #proteus_shop .proteus-products-grid{display:flex!important;flex-wrap:nowrap!important;
+    grid-template-columns:none!important;gap:14px!important;padding:4px 2px 12px!important;
+    overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;scrollbar-color:rgba(64,210,131,.5) transparent}
+  .onsale-shop #proteus_shop .proteus-products-grid::-webkit-scrollbar{height:6px}
+  .onsale-shop #proteus_shop .proteus-products-grid::-webkit-scrollbar-thumb{background:rgba(64,210,131,.5);border-radius:6px}
+  .onsale-shop #proteus_shop .proteus-product-card{flex:0 0 clamp(190px,22vw,236px)!important;
+    width:auto!important;max-width:none!important;scroll-snap-align:start}
   @media(max-width:640px){
-    .onsale-head{align-items:flex-start}
-    .onsale-card{width:clamp(168px,60vw,200px)}
+    .onsale-shop #proteus_shop .proteus-product-card{flex-basis:clamp(168px,60vw,200px)!important}
   }
 
 /* ---- FAQ (app/faq/page.tsx) ------------------------------------------
