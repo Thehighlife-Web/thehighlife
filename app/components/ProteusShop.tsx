@@ -5,6 +5,7 @@ import AccountLinkPrompt from "./AccountLinkPrompt";
 import ProteusTextFix from "./ProteusTextFix";
 import AuthModalGuard from "./AuthModalGuard";
 import ProteusSearchFix from "./ProteusSearchFix";
+import ProteusSortFix from "./ProteusSortFix";
 import ProteusConfigFix from "./ProteusConfigFix";
 import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
@@ -253,6 +254,8 @@ export default function ProteusShop({
       <ProteusStockLimit />
       {/* Corrects the 404 path JSCart uses for search suggestions. */}
       <ProteusSearchFix />
+      {/* Puts "Price" and "Name" sorts in the right order — Proteus returns them mixed. */}
+      <ProteusSortFix />
       {/* Kiosk: checkout opens straight on phone + birthday. The "Sign In or Quick
           Checkout?" screen is skipped — most customers here have a passwordless
           in-store account and cannot be expected to know which door is theirs. */}
