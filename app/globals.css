@@ -994,6 +994,26 @@
   .onsale-all{flex:0 0 auto}
   .onsale-lead{margin:18px 0 0;max-width:60ch;color:var(--muted);font-size:clamp(15px,1.7vw,18px);line-height:1.65}
   @media(max-width:640px){.onsale-head{align-items:flex-start}}
+  /* Tabs over the live row (LiveShopRow): what to show — on sale, a shelf, top
+     sellers. They sit between the lead and the row, with the "View All" link for
+     the open tab on the right. Disabled until the shop has loaded. */
+  .liverow-head{display:flex;align-items:center;justify-content:space-between;gap:18px;
+    flex-wrap:wrap;margin:26px 0 0}
+  .liverow-tabs{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+  .liverow-tab{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--green);border:1px solid rgba(64,210,131,.42);border-radius:999px;padding:8px 15px;
+    background:rgba(64,210,131,.06);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+  .liverow-tab:hover:not(:disabled){background:rgba(64,210,131,.16)}
+  .liverow-tab.on{background:var(--green);color:#08120b;border-color:var(--green);font-weight:700}
+  .liverow-tab:disabled{opacity:.45;cursor:default}
+  .liverow-tab:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .liverow-head .onsale-all{flex:0 0 auto}
+  @media(max-width:640px){
+    /* One line of chips that scrolls, rather than three rows of wrapped chips. */
+    .liverow-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+    .liverow-tabs::-webkit-scrollbar{display:none}
+    .liverow-tab{flex:0 0 auto}
+  }
   /* The row: the FULL JSCart shop, mounted by OnSaleShop, with everything but the
      product grid hidden and the grid turned into a horizontal scroller. Same idea as
      .deals-only on /deals. overflow-x lives on the grid so the page body never

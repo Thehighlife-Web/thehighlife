@@ -2,7 +2,7 @@ import ScrollEffects from "./components/ScrollEffects";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import { Marquee, DealsBand } from "./components/Deals";
-import OnSaleRail from "./components/OnSaleRail";
+import LiveShelf from "./components/LiveShelf";
 import Categories from "./components/Categories";
 import Stats from "./components/Stats";
 import Visit from "./components/Visit";
@@ -19,7 +19,7 @@ export default function Page() {
       <Marquee />
       <DealsBand />
       {/* live markdowns, straight from the register */}
-      <OnSaleRail />
+      <LiveShelf />
       <Categories />
       <Stats />
       <Visit />

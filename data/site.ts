@@ -55,6 +55,36 @@ export const shopCategories: { label: string; href: string }[] = [
 ];
 
 /**
+ * ── HOMEPAGE LIVE ROW TABS ──
+ *
+ * The tabs over the homepage's live product row (components/LiveShopRow). Each
+ * one drives the SAME JSCart shop already on the page — it can only run once per
+ * page — so only one tab's products show at a time, every one of them real
+ * tiles with a working Add button.
+ *
+ *   onsale    → JSCart's showOnSale(), ordered biggest saving first (ProteusSortFix)
+ *   category  → filterByCategory(cat), ordered Best Sellers. `cat` is JSCart's real
+ *               category id — the same ones as `shopCategories` above.
+ *   top       → no category + Best Sellers ("Top Sellers")
+ *
+ * Reorder or swap these freely; the first one is what the row opens on (if
+ * nothing is on sale, the On Sale tab drops out and the next one opens).
+ */
+export type LiveRowTab =
+  | { key: "onsale"; label: string }
+  | { key: "category"; label: string; cat: number }
+  | { key: "top"; label: string };
+
+export const liveRowTabs: LiveRowTab[] = [
+  { key: "onsale", label: "On Sale" },
+  { key: "category", label: "Flower", cat: 8 },
+  { key: "category", label: "Prerolls", cat: 9 },
+  { key: "category", label: "Vapes", cat: 6 },
+  { key: "category", label: "Edibles", cat: 4 },
+  { key: "top", label: "Top Sellers" },
+];
+
+/**
  * ── YOUR COUPONS FROM PROTEUS ──
  *
  * These mirror Proteus → Coupon Management, so this list is easy to keep in
