@@ -182,6 +182,15 @@
   .hero-h1{font-family:var(--groovy);font-weight:800;text-transform:uppercase;font-size:clamp(44px,9.5vw,128px);line-height:.86;margin:0;color:var(--white);text-shadow:var(--ol-lg),0 0 26px rgba(59,232,127,.45);text-wrap:balance}
   .hero-h1 .g{color:var(--green)}
   .hero-sub{margin:34px auto 0;max-width:52ch;color:var(--muted);font-size:clamp(16px,1.7vw,21px)}
+  /* Campaign banner in place of the headline (components/Hero.tsx, heroPromo).
+     The artwork carries its own words, so it's shown whole — never cropped — and
+     capped so it doesn't tower over the buttons on a wide screen. */
+  .hero-promo{display:block;width:min(1080px,92%);height:auto;margin:0 auto;
+    border-radius:18px;border:1px solid rgba(233,244,233,.14);box-shadow:0 26px 70px rgba(0,0,0,.55)}
+  @media(max-height:760px){.hero-promo{width:min(820px,88%)}}
+  /* Phones: use the full column — the artwork's small print (address, hours) is
+     the first thing to suffer when it's scaled down. */
+  @media(max-width:560px){.hero-promo{width:100%}}
   .hero-cta{margin-top:36px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
   .btn{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;padding:15px 26px;border-radius:100px;border:1px solid var(--line-2);display:inline-flex;align-items:center;gap:10px;cursor:pointer;transition:.25s;background:transparent;color:var(--white)}
   .btn.primary{background:var(--green);color:#05130A;border-color:var(--green);font-weight:700}

@@ -55,6 +55,25 @@ export const shopCategories: { label: string; href: string }[] = [
 ];
 
 /**
+ * ── HOMEPAGE HERO PROMO ──
+ *
+ * Replaces the hero's headline ("West Babylon's Neighborhood Dispensary") with a
+ * campaign banner: public/images/grand-opening-hero.webp. The storefront photo,
+ * the buttons and the scroll cue stay as they are.
+ *
+ * ⚠️ IT PUTS ITSELF BACK at `endsAt` — the normal headline returns with nothing
+ * to remember. Set to null to bring the headline back sooner.
+ *
+ * Kept separate from `promoPopup` below on purpose, so the banner and the pop-up
+ * can be switched off independently. They end at the same moment today.
+ */
+export const heroPromo: { alt: string; endsAt: string } | null = {
+  alt: "Grand Opening at The High Life Dispensary, West Babylon's legal cannabis dispensary — October 3rd and 4th, Saturday and Sunday. Live DJ, food, giveaways and pop-ups. 1300 Wellwood Ave, West Babylon. Open Monday to Saturday 9 AM to 9 PM, Sunday 10 AM to 8 PM. 21+ with valid ID.",
+  // Sunday 4 October 2026, 8:00 PM Eastern — Sunday closing time.
+  endsAt: "2026-10-04T20:00:00-04:00",
+};
+
+/**
  * ── POP-UP PROMO ──
  *
  * The full-page promo shown once a day per device, straight after the 21+ gate
