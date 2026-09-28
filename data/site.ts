@@ -443,7 +443,7 @@ export const featuredDeal: { coupon: number; endsAt: string } | null = {
  * put back to 4 — it is set to the number of entries so no cell sits empty.
  */
 export const stats = [
-  { count: 40, suffix: "+", label: "Brands On Shelf" },
+  { count: 100, suffix: "+", label: "Brands On Shelf" },
   { count: 100, suffix: "%", label: "Lab-Tested (NY OCM)" },
   { count: 7, suffix: "", label: "Days A Week Open" },
 ];
