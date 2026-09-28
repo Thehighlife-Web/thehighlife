@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Baloo_2 } from "next/font/google";
 import "./globals.css";
 import AgeGate from "./components/AgeGate";
+import PromoPopup from "./components/PromoPopup";
 import WarnBand from "./components/WarnBand";
 import { InlineScript } from "./components/InlineScript";
 
@@ -184,6 +185,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {/* Gate is always in the DOM; CSS decides whether it's visible. */}
         <AgeGate />
+        {/* Promo pop-up — shows after the gate, once a day, and stops on its own. */}
+        <PromoPopup />
         {/* The real cart/checkout is Proteus's JSCart, embedded on /menu. */}
         {children}
         <WarnBand />

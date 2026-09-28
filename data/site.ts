@@ -55,6 +55,31 @@ export const shopCategories: { label: string; href: string }[] = [
 ];
 
 /**
+ * ── POP-UP PROMO ──
+ *
+ * The full-page promo shown once a day per device, straight after the 21+ gate
+ * (components/PromoPopup.tsx). Artwork: public/images/grand-opening.webp.
+ *
+ * ⚠️ IT TAKES ITSELF DOWN at `endsAt`, so nobody has to remember to remove it and
+ * the site can't be left advertising last weekend. Write the Eastern offset out
+ * in full: -04:00 in summer (EDT), -05:00 in winter (EST).
+ *
+ * Set to null to switch it off early. To run a different promo: drop the new
+ * artwork in as public/images/grand-opening.webp (or change the import in
+ * PromoPopup) and update the words and the date here.
+ *
+ * Never shown on /kiosk or /signage — those screens are in the shop, they skip
+ * the age gate, and nobody is there to close a pop-up.
+ */
+export const promoPopup: { alt: string; href: string; cta: string; endsAt: string } | null = {
+  alt: "Grand Opening at The High Life Dispensary, Saturday and Sunday October 3rd and 4th, all weekend long. Buy one get one deals on your favourite brands, henna tattoos, karaoke, aerial dance show, Bori Bites food truck on site, and goodie bags while supplies last. 1300 Wellwood Avenue, West Babylon.",
+  href: "/deals",
+  cta: "See the deals",
+  // Sunday 4 October 2026, 8:00 PM Eastern — Sunday closing time.
+  endsAt: "2026-10-04T20:00:00-04:00",
+};
+
+/**
  * ── HOMEPAGE LIVE ROW TABS ──
  *
  * The tabs over the homepage's live product row (components/LiveShopRow). Each
