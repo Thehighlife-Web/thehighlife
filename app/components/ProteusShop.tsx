@@ -6,6 +6,7 @@ import ProteusTextFix from "./ProteusTextFix";
 import AuthModalGuard from "./AuthModalGuard";
 import ProteusSearchFix from "./ProteusSearchFix";
 import ProteusSortFix from "./ProteusSortFix";
+import ProteusCouponTag from "./ProteusCouponTag";
 import ProteusConfigFix from "./ProteusConfigFix";
 import PickupTimeHint from "./PickupTimeHint";
 import ProteusStockLimit from "./ProteusStockLimit";
@@ -256,6 +257,8 @@ export default function ProteusShop({
       <ProteusSearchFix />
       {/* Puts "Price" and "Name" sorts in the right order — Proteus returns them mixed. */}
       <ProteusSortFix />
+      {/* Tags products that carry a coupon: "20% OFF COUPON". */}
+      <ProteusCouponTag />
       {/* Kiosk: checkout opens straight on phone + birthday. The "Sign In or Quick
           Checkout?" screen is skipped — most customers here have a passwordless
           in-store account and cannot be expected to know which door is theirs. */}
