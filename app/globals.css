@@ -762,16 +762,6 @@
   #proteus_shop .proteus-qty-btn{background:var(--hlc-surf-hi)!important;color:var(--hlc-ink)!important;border:1px solid var(--hlc-line)!important}
   #proteus_shop .proteus-qty-input{background:var(--hlc-surf)!important;color:var(--hlc-ink)!important;border:1px solid var(--hlc-line)!important}
   #proteus_shop .proteus-wishlist-btn{color:var(--hlc-muted)!important}
-  /* "20% OFF COUPON" on products carrying a coupon (components/ProteusCouponTag).
-     Bottom-left of the picture on purpose: JSCart's sale ribbon owns the top-left
-     corner and the favourite heart the top-right, so a product can wear all three
-     without them stacking. Never swallows a tap — the whole card is the link. */
-  #proteus_shop .proteus-product-image-wrapper{position:relative}
-  #proteus_shop .hl-coupon-tag{position:absolute;left:8px;bottom:8px;z-index:3;pointer-events:none;
-    max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;line-height:1;
-    padding:6px 9px;border-radius:100px;background:var(--green);color:#08120b;
-    box-shadow:0 6px 18px rgba(0,0,0,.45)}
 
   /* JSCart auth/login modal — renders on <body>, so skinned outside #proteus_shop */
   :where(html:not([data-proteus-stock])) .proteus-modal-overlay .proteus-modal,
