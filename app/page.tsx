@@ -1,6 +1,6 @@
 import ScrollEffects from "./components/ScrollEffects";
 import Nav from "./components/Nav";
-import Hero from "./components/Hero";
+import StoreTour from "./components/StoreTour";
 import { Marquee, DealsBand } from "./components/Deals";
 import LiveShelf from "./components/LiveShelf";
 import Categories from "./components/Categories";
@@ -15,7 +15,10 @@ export default function Page() {
       <ScrollEffects />
       <div className="rail" id="rail" />
       <Nav />
-      <Hero />
+      {/* The video IS the top of the page. The old <Hero /> — storefront photo,
+          headline and the Grand Opening banner — was taken out on Elijah's ask;
+          components/Hero.tsx is still there if it's ever wanted back. */}
+      <StoreTour />
       <Marquee />
       <DealsBand />
       {/* live markdowns, straight from the register */}

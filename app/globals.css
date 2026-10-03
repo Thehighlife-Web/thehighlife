@@ -148,6 +148,37 @@
   .dealbar-count{opacity:.62}
   @media(prefers-reduced-motion:reduce){.dealbar-dot,.dealbar-rotating > *{animation:none}}
 
+  /* ── Store walkthrough video, top of the homepage (components/StoreTour.tsx) ──
+     NEVER give this object-fit:cover or a fixed height. The video has its own
+     captions burned in and they run edge to edge, so cropping cuts the first and
+     last words off. Full width, natural 16:9, height follows — that's the whole
+     rule. The fixed nav floats over the top of it, which its dark gradient is
+     already built for. */
+  /* The header is fixed, so the video has to be pushed clear of it or the nav
+     sits ON the picture. That's tolerable on a wide screen and not on a phone,
+     where the band is only ~210px tall and the header covered HALF of it,
+     including the captions. These two numbers are the header's own height:
+       .nav-main  = brand-logo 56 + 16px padding x2  = 88   (44 + 12x2 = 68 under 560)
+       .catbar    = 12.5px/1.35 text + 10px padding x2 + 1px top border = 41
+     ⚠️ The 560px breakpoint must stay in step with the .brand-logo / .nav-main
+     one above — they are the reason the height changes at all. */
+  .storetour{background:#000;padding-top:129px}
+  @media(max-width:560px){.storetour{padding-top:109px}}
+  /* The frame, not the section, is the positioning context — so the Play button
+     covers the picture and not the reserved header strip above it. */
+  .storetour-frame{position:relative;line-height:0}
+  .storetour video{display:block;width:100%;height:auto}
+  /* Shown only when we deliberately don't autoplay (reduced motion, data saver)
+     or the browser blocked it. Sits over the poster frame. */
+  .storetour-play{position:absolute;inset:0;width:100%;display:flex;align-items:center;
+    justify-content:center;gap:12px;border:0;cursor:pointer;line-height:1;
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--white);background:rgba(8,9,10,.46);transition:background .25s}
+  .storetour-play:hover{background:rgba(8,9,10,.3)}
+  .storetour-play span{display:inline-flex;align-items:center;justify-content:center;
+    width:46px;height:46px;border-radius:100px;background:var(--green);color:#05130A;
+    font-size:15px;padding-left:3px}
+
   /* hero */
   .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(20px,5vw,54px);overflow:hidden}
   #smoke{position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:.32}

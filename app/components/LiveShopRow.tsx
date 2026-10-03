@@ -95,7 +95,14 @@ export default function LiveShopRow({ hasOnSale }: { hasOnSale: boolean }) {
           io.disconnect();
         }
       },
-      { rootMargin: "900px 0px" },
+      // 900px used to be safe because the hero pushed this row a full screen
+      // further down. With the hero gone the row sits ~260px below the fold on a
+      // phone, so a 900px margin fired AT LANDING — and the first thing a new
+      // visitor met was JSCart's "How would you like to shop?" dialog, which the
+      // widget raises as soon as it starts and finds more than one way to shop.
+      // 200px still loads the row before anyone reaches it, without it starting
+      // while they are still looking at the top of the page.
+      { rootMargin: "200px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
