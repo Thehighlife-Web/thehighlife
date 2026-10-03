@@ -109,22 +109,43 @@ export const eventStrip: { lines: string[]; endsAt: string } | null = {
 /**
  * ── POP-UP PROMO ──
  *
- * The full-page promo shown once a day per device, straight after the 21+ gate
- * (components/PromoPopup.tsx). Artwork: public/images/grand-opening.webp.
+ * The promo shown once a day per device, straight after the 21+ gate
+ * (components/PromoPopup.tsx).
+ *
+ * These are WORDS, not a picture. It used to show the Grand Opening flyer
+ * (public/images/grand-opening.webp, still in the repo); Elijah asked on 3 Oct
+ * 2026 for the message to be said in plain text instead, which also reads at any
+ * size and can be read aloud by a screen reader. To go back to the flyer, put the
+ * <Image> back in PromoPopup — the .promo-art rules are still in globals.css.
  *
  * ⚠️ IT TAKES ITSELF DOWN at `endsAt`, so nobody has to remember to remove it and
  * the site can't be left advertising last weekend. Write the Eastern offset out
  * in full: -04:00 in summer (EDT), -05:00 in winter (EST).
  *
- * Set to null to switch it off early. To run a different promo: drop the new
- * artwork in as public/images/grand-opening.webp (or change the import in
- * PromoPopup) and update the words and the date here.
+ * Set to null to switch it off early. To run a different promo, change the words
+ * and the date here — nothing in the component needs touching.
+ *
+ * Keep `title` short: it's set in the display face and wraps to three lines on a
+ * phone before it starts looking wrong.
  *
  * Never shown on /kiosk or /signage — those screens are in the shop, they skip
  * the age gate, and nobody is there to close a pop-up.
  */
-export const promoPopup: { alt: string; href: string; cta: string; endsAt: string } | null = {
-  alt: "Grand Opening at The High Life Dispensary, Saturday and Sunday October 3rd and 4th, all weekend long. Buy one get one deals on your favourite brands, henna tattoos, karaoke, aerial dance show, Bori Bites food truck on site, and goodie bags while supplies last. 1300 Wellwood Avenue, West Babylon.",
+export const promoPopup: {
+  title: string;
+  body: string;
+  tagline: string;
+  dates: string;
+  address: string;
+  href: string;
+  cta: string;
+  endsAt: string;
+} | null = {
+  title: "Grand Opening Is Now Live",
+  body: "Come down to High Life, meet your favorite brands, and get exclusive one-time deals, raffles, goodie bags and much more.",
+  tagline: "Escape to The High Life",
+  dates: "Oct 3rd – Oct 4th",
+  address: "1300 Wellwood Ave, West Babylon",
   href: "/deals",
   cta: "See the deals",
   // Sunday 4 October 2026, 8:00 PM Eastern — Sunday closing time.

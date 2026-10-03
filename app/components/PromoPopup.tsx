@@ -1,9 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import flyer from "@/public/images/grand-opening.webp";
 import { promoPopup } from "@/data/site";
 
 /**
@@ -26,11 +24,12 @@ import { promoPopup } from "@/data/site";
  * Not on /kiosk or /signage: those are in-store screens that skip the gate, and a
  * pop-up on a shop tablet is in the way of a customer with nobody to close it.
  *
- * ── THE ARTWORK ──────────────────────────────────────────────────────────────
- * 1950x1950 and 485KB as supplied. next/image resizes and re-encodes it for the
- * screen it lands on, which is why it's a static import (it also gets the width
- * and height from the file, so the box never jumps). Only loads when the pop-up
- * actually opens — nothing downloads it on an ordinary visit.
+ * ── WORDS, NOT A PICTURE ─────────────────────────────────────────────────────
+ * This used to be the Grand Opening flyer as an image. It's typeset from
+ * promoPopup (data/site.ts) now, which costs nothing to download, stays sharp at
+ * any size, reflows on a narrow phone instead of shrinking the small print to
+ * nothing, and can actually be read aloud. The flyer is still in the repo at
+ * public/images/grand-opening.webp if it's ever wanted back.
  *
  * Reuses the product modal's backdrop, close button and scroll lock
  * (.modal-back / .modal-x / html.modal-open in globals.css).
@@ -126,16 +125,24 @@ export default function PromoPopup() {
         className="promo"
         role="dialog"
         aria-modal="true"
-        aria-label={promoPopup.alt}
+        aria-labelledby="promo-title"
         onClick={(e) => e.stopPropagation()}
       >
         <button ref={closeRef} className="modal-x" type="button" onClick={close} aria-label="Close">
           ✕
         </button>
 
-        <a className="promo-art" href={promoPopup.href} onClick={close}>
-          <Image src={flyer} alt={promoPopup.alt} sizes="(max-width: 640px) 92vw, 560px" />
-        </a>
+        <div className="promo-msg">
+          <h2 className="promo-title" id="promo-title">
+            {promoPopup.title}
+          </h2>
+          <p className="promo-body">{promoPopup.body}</p>
+          <p className="promo-tagline">{promoPopup.tagline}</p>
+          <p className="promo-where">
+            <span className="promo-dates">{promoPopup.dates}</span>
+            <span className="promo-address">{promoPopup.address}</span>
+          </p>
+        </div>
 
         <div className="promo-actions">
           <a className="btn primary" href={promoPopup.href} onClick={close}>
