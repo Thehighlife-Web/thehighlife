@@ -66,10 +66,43 @@ export const shopCategories: { label: string; href: string }[] = [
  *
  * Kept separate from `promoPopup` below on purpose, so the banner and the pop-up
  * can be switched off independently. They end at the same moment today.
+ *
+ * ⚠️ DORMANT: the homepage hero was removed on 3 Oct 2026 (the video opens the
+ * page now), so nothing reads this at the moment. It is kept, with Hero.tsx, so
+ * the hero can be put back without rebuilding the campaign wiring.
  */
 export const heroPromo: { alt: string; endsAt: string } | null = {
   alt: "Grand Opening at The High Life Dispensary, West Babylon's legal cannabis dispensary — October 3rd and 4th, Saturday and Sunday. Live DJ, food, giveaways and pop-ups. 1300 Wellwood Ave, West Babylon. Open Monday to Saturday 9 AM to 9 PM, Sunday 10 AM to 8 PM. 21+ with valid ID.",
   // Sunday 4 October 2026, 8:00 PM Eastern — Sunday closing time.
+  endsAt: "2026-10-04T20:00:00-04:00",
+};
+
+/**
+ * ── THE SCROLLING STRIP (homepage, under the video) ──
+ *
+ * What's on right now, in the green strip. These lines go IN FRONT of the strip's
+ * standing deal lines (components/Deals.tsx), so it cycles through the event and
+ * then the usual deals, over and over.
+ *
+ * ⚠️ IT TAKES ITSELF DOWN at `endsAt` and the strip goes back to the deal lines on
+ * its own — nobody has to remember to clear it, and the site can't be left
+ * advertising a weekend that's gone. Write the Eastern offset out in full: -04:00
+ * in summer (EDT), -05:00 in winter (EST). Set to null to clear it early.
+ *
+ * Keep each line SHORT: they're set in the display face at up to 60px. The strip
+ * works its speed out from their total length, so more words means a longer trip
+ * round rather than a faster one.
+ */
+export const eventStrip: { lines: string[]; endsAt: string } | null = {
+  lines: [
+    "Grand Opening Event Oct 3rd – Oct 4th",
+    "Exclusive BOGO Deals",
+    "Brand Pop Ups",
+    "Rolling Competition",
+    "Food Truck",
+    "And Much More",
+  ],
+  // Sunday 4 October 2026, 8:00 PM Eastern — the same moment as the pop-up.
   endsAt: "2026-10-04T20:00:00-04:00",
 };
 

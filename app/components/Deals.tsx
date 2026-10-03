@@ -1,5 +1,7 @@
+import { Fragment } from "react";
 import Image from "next/image";
 import { getShopDeals, listOtherDeals, pickFeaturedDeal } from "@/lib/deals";
+import { activeEventStrip } from "@/lib/promo";
 
 /**
  * Homepage deals section: a scrolling marquee + a bold band with ONE featured
@@ -8,19 +10,58 @@ import { getShopDeals, listOtherDeals, pickFeaturedDeal } from "@/lib/deals";
  * Proteus.
  */
 
+/** Standing lines: always-true energy, no brand or percent claim that could go stale. */
+const DEAL_LINES = [
+  "Deals Deals Deals",
+  "BOGO All Week",
+  "2 For $40",
+  "25% Off",
+  "Bundles",
+  "Fresh Markdowns",
+];
+
+/**
+ * How long one trip round the strip should take.
+ *
+ * The animation moves the track a fixed fraction of its own width, so a FIXED
+ * duration means more words scroll FASTER. Adding the Grand Opening lines nearly
+ * doubled the content and would have doubled the speed. Working the seconds out
+ * from the text length instead keeps the pace identical however much is on it —
+ * the standing lines are ~68 characters and read nicely over 24s, which sets the
+ * rate below.
+ */
+const SECONDS_PER_CHAR = 24 / 68;
+const marqueeSeconds = (lines: string[]) =>
+  Math.max(24, Math.round(lines.join("").length * SECONDS_PER_CHAR));
+
 export function Marquee() {
-  // Generic, always-true energy — no specific brand/percent claims that could go stale.
+  // The event goes in front of the standing lines, so the strip cycles through
+  // what's on this weekend and then the usual deals, over and over. It drops out
+  // by itself at eventStrip.endsAt (data/site.ts).
+  const event = activeEventStrip();
+  const lines = event ? [...event.lines, ...DEAL_LINES] : DEAL_LINES;
+
   const unit = (
     <span>
-      Deals Deals Deals <em className="sep">✦</em> BOGO All Week <em className="sep">✦</em> 2 For $40
-      <em className="sep">✦</em> 25% Off <em className="sep">✦</em> Bundles <em className="sep">✦</em>
-      Fresh Markdowns <em className="sep">✦</em>
+      {/* Fragment, not a wrapper element: the strip is a flex row whose spacing
+          comes from `gap` between the text and the ✦ separators, so each line has
+          to stay a bare text node beside its own ✦, exactly as before. */}
+      {lines.map((line) => (
+        <Fragment key={line}>
+          {line} <em className="sep">✦</em>
+        </Fragment>
+      ))}
     </span>
   );
+
   return (
+    // aria-hidden because the track is printed TWICE for the seamless loop, so a
+    // screen reader would read the whole strip through twice. Nothing here is
+    // only here: the event details are also in the pop-up's description, and the
+    // deals are in the band below.
     <div className="marquee" aria-hidden="true">
       {/* duplicated so the loop is seamless */}
-      <div className="mtrack">
+      <div className="mtrack" style={{ animationDuration: `${marqueeSeconds(lines)}s` }}>
         {unit}
         {unit}
       </div>

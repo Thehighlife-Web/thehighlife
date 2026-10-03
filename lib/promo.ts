@@ -1,4 +1,4 @@
-import { heroPromo } from "@/data/site";
+import { eventStrip, heroPromo } from "@/data/site";
 
 /**
  * Is the campaign still on?
@@ -12,4 +12,16 @@ import { heroPromo } from "@/data/site";
 export function activeHeroPromo(now: number = Date.now()) {
   if (!heroPromo) return null;
   return now < new Date(heroPromo.endsAt).getTime() ? heroPromo : null;
+}
+
+/**
+ * The event lines for the scrolling strip, or null once the event is over.
+ *
+ * Same reasoning as above: the clock is read here, not during render, and the
+ * homepage renders per request — so the strip drops back to its standing deal
+ * lines on the first visit after `endsAt` with nothing to remember.
+ */
+export function activeEventStrip(now: number = Date.now()) {
+  if (!eventStrip || eventStrip.lines.length === 0) return null;
+  return now < new Date(eventStrip.endsAt).getTime() ? eventStrip : null;
 }
