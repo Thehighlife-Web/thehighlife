@@ -329,6 +329,12 @@
   html[data-today="0"] .hours .hr:nth-child(1) .d::after,html[data-today="1"] .hours .hr:nth-child(2) .d::after,html[data-today="2"] .hours .hr:nth-child(3) .d::after,html[data-today="3"] .hours .hr:nth-child(4) .d::after,html[data-today="4"] .hours .hr:nth-child(5) .d::after,html[data-today="5"] .hours .hr:nth-child(6) .d::after,html[data-today="6"] .hours .hr:nth-child(7) .d::after{content:" · Today"}
   .addr{display:flex;flex-direction:column;gap:20px}
   .addr .big{font-family:var(--groovy);font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;color:var(--white);text-shadow:var(--ol-md)}
+  /* The address opens directions. No underline at this size — it's a display
+     block, and underlining two 38px lines looks like a mistake — so the hover
+     and focus states carry it instead. */
+  .addr-link{color:inherit;text-decoration:none;transition:color .2s}
+  .addr-link:hover{color:var(--green)}
+  .addr-link:focus-visible{outline:2px solid var(--green);outline-offset:4px;border-radius:4px}
   .addr p{color:var(--muted);margin:0;font-size:15px}
   /* Real Google map (StoreMap). Was a decorative grid with a pulsing dot that
      looked like a map but showed nothing — that and its  keyframes are gone. */
@@ -344,6 +350,10 @@
   .foot-title .a{display:block;font-size:clamp(40px,11vw,150px)}
   .foot-title .b{display:block;color:var(--green);font-size:clamp(30px,8vw,110px)}
   .footmeta{margin-top:56px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;border-top:1px solid var(--line);padding-top:26px;font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  /* 13px of mono is a mean target for a thumb (the address measured 15px tall).
+     The padding grows the hit area without moving anything — the row is a flex
+     line with its own gap, so it just absorbs it. */
+  .footmeta a{display:inline-block;padding:8px 0}
   .footmeta a:hover{color:var(--green)}
 
   /* ---------- 21+ age gate ---------- */
@@ -592,7 +602,13 @@
   .promo-where{margin:16px 0 0;display:flex;flex-direction:column;align-items:center;gap:5px;
     font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
   .promo-dates{color:var(--white);font-weight:700}
-  .promo-address{color:var(--muted);letter-spacing:.1em}
+  /* A link to directions. Small mono type, so it gets an underline to say so —
+     and vertical padding, because 12px of text is a mean target for a thumb. */
+  .promo-address{color:var(--muted);letter-spacing:.1em;text-decoration:underline;
+    text-decoration-color:rgba(243,247,241,.32);text-underline-offset:4px;
+    padding:6px 10px;margin:-2px 0;border-radius:8px;transition:color .2s,text-decoration-color .2s}
+  .promo-address:hover{color:var(--green);text-decoration-color:var(--green)}
+  .promo-address:focus-visible{outline:2px solid var(--green);outline-offset:2px}
   @media(max-width:520px){.promo-msg{padding:28px 20px 4px}}
   .promo-actions{display:flex;flex-wrap:wrap;gap:10px;padding:16px 18px 18px}
   .promo-actions .btn{flex:1 1 180px;text-align:center}

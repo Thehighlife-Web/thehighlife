@@ -10,10 +10,28 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+const ADDRESS_1 = "1300 Wellwood Ave";
+const ADDRESS_2 = "West Babylon, NY 11704";
+
 export const store = {
   name: "The High Life Dispensary",
-  addressLine1: "1300 Wellwood Ave",
-  addressLine2: "West Babylon, NY 11704",
+  addressLine1: ADDRESS_1,
+  addressLine2: ADDRESS_2,
+  /**
+   * Where every address on the site points when it's tapped — the footer, the
+   * Visit section and page, and the promo pop-up. On a phone this hands straight
+   * over to the Maps app with directions ready.
+   *
+   * ONE url for all of them on purpose: there used to be two spellings of it
+   * (`/maps/search/?api=1&query=` on the Visit page and `maps.google.com/?q=`
+   * in the Visit section, the second one missing the ZIP), which is how a store
+   * move ends up half-corrected. This is Google's documented Maps URL form, and
+   * it's built from the lines above so the address can only be changed in one
+   * place.
+   */
+  mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${ADDRESS_1}, ${ADDRESS_2}`,
+  )}`,
   email: "info@thehighlife.shop",
   license: "OCM-CAURD-25-000277-D1",
   legal:

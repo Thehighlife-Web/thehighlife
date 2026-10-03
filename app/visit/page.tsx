@@ -11,9 +11,6 @@ export const metadata: Metadata = {
     "Visit The High Life Dispensary at 1300 Wellwood Ave, West Babylon NY 11704. Open 7 days. 21+ with valid ID.",
 };
 
-const MAPS_URL =
-  "https://www.google.com/maps/search/?api=1&query=1300+Wellwood+Ave+West+Babylon+NY+11704";
-
 export default function VisitPage() {
   return (
     <>
@@ -33,9 +30,17 @@ export default function VisitPage() {
 
             <div className="addr">
               <div className="big">
-                {store.addressLine1}
-                <br />
-                {store.addressLine2}
+                <a
+                  className="addr-link"
+                  href={store.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Get directions to ${store.addressLine1}, ${store.addressLine2}`}
+                >
+                  {store.addressLine1}
+                  <br />
+                  {store.addressLine2}
+                </a>
               </div>
               <p>
                 Look for the green neon leaf. Bring a valid, government-issued photo ID every
@@ -47,7 +52,12 @@ export default function VisitPage() {
               <StoreMap className="visit-map" />
 
               <div className="page-cta" style={{ marginTop: 0 }}>
-                <a className="btn primary" href={MAPS_URL} target="_blank" rel="noopener noreferrer">
+                <a
+                  className="btn primary"
+                  href={store.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Get Directions →
                 </a>
                 <a className="btn ghost" href={`mailto:${store.email}`}>

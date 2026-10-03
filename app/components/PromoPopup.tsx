@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { promoPopup } from "@/data/site";
+import { promoPopup, store } from "@/data/site";
 
 /**
  * The promo pop-up — right now, the Grand Opening (see promoPopup in data/site.ts).
@@ -140,7 +140,18 @@ export default function PromoPopup() {
           <p className="promo-tagline">{promoPopup.tagline}</p>
           <p className="promo-where">
             <span className="promo-dates">{promoPopup.dates}</span>
-            <span className="promo-address">{promoPopup.address}</span>
+            {/* The address opens directions. It closes the pop-up on the way out, so
+                nobody comes back from the Maps app to find it still sitting there. */}
+            <a
+              className="promo-address"
+              href={store.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Get directions to ${promoPopup.address}`}
+              onClick={close}
+            >
+              {promoPopup.address}
+            </a>
           </p>
         </div>
 

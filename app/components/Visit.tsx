@@ -11,17 +11,31 @@ export default function Visit() {
           <Hours />
           <div className="addr reveal">
             <div className="big">
-              {store.addressLine1}
-              <br />
-              {store.addressLine2}
+              {/* The address itself opens directions, not just the button below it —
+                  on a phone the address is the thing people reach for. */}
+              <a
+                className="addr-link"
+                href={store.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Get directions to ${store.addressLine1}, ${store.addressLine2}`}
+              >
+                {store.addressLine1}
+                <br />
+                {store.addressLine2}
+              </a>
             </div>
             <p>
-              Look for the green neon leaf. Come as you are — just bring a valid,
-              government-issued 21+ ID every visit. No medical card required for adult-use.
+              Look for the green neon leaf. Come as you are — just bring a
+              valid, government-issued 21+ ID every visit. No medical card
+              required for adult-use.
               <br />
               <br />
               Questions?{" "}
-              <a href={`mailto:${store.email}`} style={{ color: "var(--green)" }}>
+              <a
+                href={`mailto:${store.email}`}
+                style={{ color: "var(--green)" }}
+              >
                 {store.email}
               </a>
             </p>
@@ -29,9 +43,7 @@ export default function Visit() {
             <a
               className="btn ghost"
               style={{ alignSelf: "flex-start" }}
-              href={`https://maps.google.com/?q=${encodeURIComponent(
-                `${store.addressLine1}, ${store.addressLine2}`
-              )}`}
+              href={store.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
             >

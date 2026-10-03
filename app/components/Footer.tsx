@@ -10,7 +10,10 @@ export default function Footer() {
         </div>
         <div className="footmeta">
           <span>
-            {store.addressLine1}, {store.addressLine2}
+            {/* Tapping the address opens directions — on a phone, in the Maps app. */}
+            <a href={store.mapsUrl} target="_blank" rel="noopener noreferrer">
+              {store.addressLine1}, {store.addressLine2}
+            </a>
           </span>
           <span>
             <a href={`mailto:${store.email}`}>{store.email}</a>
