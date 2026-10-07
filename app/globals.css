@@ -757,6 +757,23 @@
   /* product + deal cards */
   #proteus_shop .proteus-product-card,#proteus_shop .proteus-deal-card{
     background:var(--hlc-surf)!important;border:1px solid var(--hlc-line)!important;border-radius:14px!important}
+  /* ── Phones: two products per row on the menu ──
+     JSCart ships a phone rule for this (minmax(150px,1fr), gap 12) but it never
+     takes effect: it sits in an @media block EARLIER in their stylesheet than
+     the plain .proteus-products-grid rule, and a media query adds no
+     specificity — so the later unconditional rule wins at every width. The menu
+     therefore ran on the desktop track size, minmax(220px,1fr) with a 24px gap,
+     and two of those can't fit the 348px a 390px phone leaves: one product per
+     row, measured live.
+     Asking for exactly two is better here than restoring their minmax anyway —
+     the count stops depending on how wide the phone happens to be.
+     Not the kiosk (its tablets have their own 3-up rule above) and not the
+     homepage shelf, which is a sideways-scrolling row and overrides this below. */
+  @media(max-width:640px){
+    html:not(.proteus-kiosk-active) #proteus_shop .proteus-products-grid{
+      grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+  }
+
   /* Square product image tiles (JSCart default is a short landscape rectangle) */
   #proteus_shop .proteus-product-image-wrapper{aspect-ratio:1/1!important;height:auto!important}
   #proteus_shop .proteus-product-image{width:100%!important;height:100%!important;object-fit:cover!important}
