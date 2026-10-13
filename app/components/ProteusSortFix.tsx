@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { FIXED_SORTS, sortBySavings, sortProducts } from "@/lib/sortProducts";
+import { FIXED_SORTS, sortByNewest, sortProducts } from "@/lib/sortProducts";
 
 /**
  * Makes the menu's "Price" and "Name" sort options actually sort.
@@ -50,13 +50,15 @@ function sortOf(input: RequestInfo | URL): string | null {
     const url = new URL(raw, location.href);
     if (!/\/api_cart_v2\.cfm$/i.test(url.pathname)) return null;
     if (url.searchParams.get("action") !== "products") return null;
-    // The homepage's "On Sale Right Now" row (OnSaleShop) asks for biggest saving
-    // first by flagging <html>. Only on-sale lists, only while that flag is set.
+    // The homepage's "On Sale" tab asks for newest first by flagging <html>.
+    // Only on-sale lists, only while that flag is set. (It led with the biggest
+    // markdown until 13 Oct 2026 — see sortByNewest for what "newest" can and
+    // can't mean here.)
     if (
       url.searchParams.get("onsale") === "1" &&
-      document.documentElement.hasAttribute("data-hl-onsale-savings")
+      document.documentElement.hasAttribute("data-hl-onsale-newest")
     ) {
-      return "savings";
+      return "newest";
     }
     const sortby = url.searchParams.get("sortby");
     return sortby && FIXED_SORTS.has(sortby) ? sortby : null;
@@ -78,7 +80,7 @@ export default function ProteusSortFix() {
         const data = await res.clone().json();
         if (!data || !Array.isArray(data.products)) return res;
         data.products =
-          sortby === "savings" ? sortBySavings(data.products) : sortProducts(data.products, sortby);
+          sortby === "newest" ? sortByNewest(data.products) : sortProducts(data.products, sortby);
         // The body is re-encoded, so the old length/encoding no longer describe it.
         const headers = new Headers(res.headers);
         headers.delete("content-length");

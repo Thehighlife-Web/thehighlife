@@ -15,6 +15,7 @@
  */
 
 export type SortableProduct = {
+  id?: number | string;
   name?: string;
   price?: number | string;
   salePrice?: number | string;
@@ -44,6 +45,10 @@ const collator = new Intl.Collator("en", { sensitivity: "base", numeric: true })
  * ties in name order. Used for the homepage's "On Sale Right Now" row, which has
  * always led with the biggest markdowns — Proteus has no such sort, so it's done
  * here (see ProteusSortFix). Items with no computable saving go last.
+ *
+ * ⚠️ NOT WIRED UP at the moment — the On Sale tab went to newest first on
+ * 13 Oct 2026 (sortByNewest below). Kept because it works and is one line to
+ * switch back to in ProteusSortFix.
  */
 export function sortBySavings<T extends SortableProduct>(products: T[]): T[] {
   const saving = (p: T) => {
@@ -57,6 +62,37 @@ export function sortBySavings<T extends SortableProduct>(products: T[]): T[] {
     if (sa === null || sb === null) return sa === sb ? 0 : sa === null ? 1 : -1;
     if (sb !== sa) return sb - sa;
     return collator.compare((a.name ?? "").trim(), (b.name ?? "").trim());
+  });
+}
+
+/**
+ * Newest first, for the homepage's "On Sale" tab.
+ *
+ * ⚠️ READ THIS BEFORE CHANGING IT. "Newest" here means the most recently added
+ * PRODUCT, not the most recently discounted one. The products API returns no
+ * dates whatsoever — no added date, no sale start, nothing — so when something
+ * went on sale is simply not knowable from our side. An item that has sat on the
+ * shelf for months and was marked down this morning will NOT come first.
+ *
+ * Proteus's own `sortby=newest` is exactly product id descending — checked
+ * against the live on-sale list, all 107 positions matched — so ordering by id
+ * here reproduces their "newest" without depending on their server, which gets
+ * its own name and price sorts wrong (see FIXED_SORTS above).
+ *
+ * If a real "just went on sale" order is ever wanted, Proteus has to publish a
+ * sale-start or last-updated field; there is no way to derive it from this.
+ */
+export function sortByNewest<T extends SortableProduct>(products: T[]): T[] {
+  const idOf = (p: T) => {
+    const n = typeof p.id === "number" ? p.id : parseFloat(String(p.id ?? ""));
+    return Number.isFinite(n) ? n : null;
+  };
+  return [...products].sort((a, b) => {
+    const ia = idOf(a);
+    const ib = idOf(b);
+    // Anything without a usable id goes last rather than floating to the top.
+    if (ia === null || ib === null) return ia === ib ? 0 : ia === null ? 1 : -1;
+    return ib - ia;
   });
 }
 

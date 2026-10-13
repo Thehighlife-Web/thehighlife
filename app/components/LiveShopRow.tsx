@@ -17,7 +17,7 @@ import ProteusShop from "./ProteusShop";
  * the cart, which those carousels can't.
  *
  * Each tab drives the shop through its own public controls:
- *   On Sale    showOnSale()                  — biggest saving first (ProteusSortFix)
+ *   On Sale    showOnSale()                  — newest first (ProteusSortFix)
  *   A category filterByCategory(cat)         — Best Sellers order
  *   Top Sellers filterByCategory('') + popular
  * filterByCategory keeps whatever sort is set, so sortBy('popular') is only sent
@@ -47,8 +47,8 @@ import ProteusShop from "./ProteusShop";
  *     pushState(); without this every tab tap would add a Back step that appears
  *     to do nothing. They're made replaces for the duration of each call.
  *
- * It also sets data-hl-onsale-savings on <html> so ProteusSortFix orders the
- * on-sale tab biggest saving first, which Proteus has no sort for. Only while
+ * It also sets data-hl-onsale-newest on <html> so ProteusSortFix orders the
+ * on-sale tab newest first (see sortByNewest for what that can mean). Only while
  * this component is mounted, and it only affects on-sale requests.
  *
  * Checkout still requires JSCart's "powered by" footer to be visible (it refuses
@@ -111,7 +111,7 @@ export default function LiveShopRow({ hasOnSale }: { hasOnSale: boolean }) {
   // 2 + 3. Installed on mount — before the widget exists, so before its listeners.
   useEffect(() => {
     const html = document.documentElement;
-    html.setAttribute("data-hl-onsale-savings", "");
+    html.setAttribute("data-hl-onsale-newest", "");
 
     const onPop = (e: PopStateEvent) => {
       if (WIDGET_HASH.test(location.hash)) return;
@@ -132,7 +132,7 @@ export default function LiveShopRow({ hasOnSale }: { hasOnSale: boolean }) {
     return () => {
       window.removeEventListener("popstate", onPop);
       if (window.scrollTo === guarded) window.scrollTo = nativeScrollTo;
-      html.removeAttribute("data-hl-onsale-savings");
+      html.removeAttribute("data-hl-onsale-newest");
     };
   }, []);
 
