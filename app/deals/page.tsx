@@ -35,6 +35,10 @@ export default function DealsPage() {
             <br />
             Deals
           </h2>
+          {/* The small print at the foot of the page says this too, at length.
+              It's repeated here because that's the bottom of a long page and
+              almost nobody reads it before they've picked something. */}
+          <p className="deals-note">Deals are subject to change</p>
           <p className="page-lead">
             Our current deals, straight from the shop — always up to date. Tap <b>Shop Now</b> on any
             deal to see what qualifies. Prices exclude tax, while supplies last.

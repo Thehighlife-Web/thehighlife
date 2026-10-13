@@ -475,6 +475,11 @@
   /* ---------- shared inner pages ---------- */
   .page{padding-top:70px;border-top:1px solid var(--line)}
   .page-lead{margin:20px 0 0;max-width:62ch;color:var(--muted);font-size:clamp(16px,1.8vw,19.5px);line-height:1.65}
+  /* The notice under the Deals heading. Mono and uppercase so it reads as a
+     standing condition rather than part of the sell — and in the brand green so
+     it isn't mistaken for the greyed-out small print at the foot of the page. */
+  .deals-note{margin:16px 0 0;font-family:var(--mono);font-size:12px;font-weight:700;
+    letter-spacing:.17em;text-transform:uppercase;color:var(--green)}
   .page-cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:46px}
   .navlinks a.on{color:var(--green)}
 
