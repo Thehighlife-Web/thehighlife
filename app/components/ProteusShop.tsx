@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import AccountLinkPrompt from "./AccountLinkPrompt";
 import ProteusTextFix from "./ProteusTextFix";
 import AuthModalGuard from "./AuthModalGuard";
+import ProteusDateInputFix from "./ProteusDateInputFix";
 import ProteusSearchFix from "./ProteusSearchFix";
 import ProteusSortFix from "./ProteusSortFix";
 import ProteusConfigFix from "./ProteusConfigFix";
@@ -250,6 +251,9 @@ export default function ProteusShop({
       <ProteusTextFix />
       {/* Keeps the sign-in modal from closing on a retargeted click while typing. */}
       <AuthModalGuard />
+      {/* Quick sign-in: type the birthdate instead of wheeling a calendar back
+          thirty years. Their registration form already works this way. */}
+      <ProteusDateInputFix />
       {/* Caps the quantity stepper at real stock. Silent — no count is shown. */}
       <ProteusStockLimit />
       {/* Corrects the 404 path JSCart uses for search suggestions. */}
