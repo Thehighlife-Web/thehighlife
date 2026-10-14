@@ -475,6 +475,32 @@
   /* ---------- shared inner pages ---------- */
   .page{padding-top:70px;border-top:1px solid var(--line)}
   .page-lead{margin:20px 0 0;max-width:62ch;color:var(--muted);font-size:clamp(16px,1.8vw,19.5px);line-height:1.65}
+  /* ── Order-type question (components/OrderTypeGate.tsx) ──
+     Asked once after the 21+ gate, before any shopping. */
+  .ordertype{position:relative;width:min(460px,100%);border-radius:20px;
+    border:1px solid var(--line-2);background:linear-gradient(180deg,var(--panel),#0A0D0B);
+    box-shadow:0 30px 90px rgba(0,0,0,.6);padding:30px 26px 26px;text-align:center}
+  .ordertype-title{margin:0;font-family:var(--groovy);font-weight:800;
+    font-size:clamp(23px,5vw,30px);line-height:1.1;color:var(--white);text-wrap:balance}
+  .ordertype-lead{margin:10px 0 0;font-size:14px;color:var(--muted)}
+  .ordertype-list{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+  .ordertype-option{display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+    width:100%;padding:14px 18px;border-radius:14px;cursor:pointer;text-align:left;
+    border:1px solid var(--line-2);background:rgba(243,247,241,.04);
+    transition:border-color .2s,background .2s,transform .2s}
+  .ordertype-option:hover{border-color:var(--green);background:rgba(59,232,127,.08);transform:translateY(-1px)}
+  .ordertype-option:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+  .ordertype-label{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--white)}
+  .ordertype-blurb{font-size:13.5px;color:var(--muted)}
+
+  /* ⚠️ LOAD-BEARING. On /menu the cart widget starts while the question above is
+     still open, finds nothing stored and opens ITS OWN copy of the same dialog —
+     two boxes at once. OrderTypeGate flags <html> while unanswered; this hides
+     theirs for exactly that long. Answering clears the flag and calls
+     setShopType, which closes theirs anyway. */
+  html[data-hl-shoptype-pending] #proteus-shoptype-modal{display:none!important}
+
   /* The notice under the Deals heading. Mono and uppercase so it reads as a
      standing condition rather than part of the sell — and in the brand green so
      it isn't mistaken for the greyed-out small print at the foot of the page. */

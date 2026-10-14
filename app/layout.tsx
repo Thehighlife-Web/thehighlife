@@ -4,6 +4,8 @@ import { Baloo_2 } from "next/font/google";
 import "./globals.css";
 import AgeGate from "./components/AgeGate";
 import PromoPopup from "./components/PromoPopup";
+import OrderTypeGate from "./components/OrderTypeGate";
+import { getOrderTypes } from "@/lib/orderTypes";
 import WarnBand from "./components/WarnBand";
 import { InlineScript } from "./components/InlineScript";
 
@@ -187,6 +189,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AgeGate />
         {/* Promo pop-up — shows after the gate, once a day, and stops on its own. */}
         <PromoPopup />
+        {/* Asks pickup / curbside / delivery once, after the gate, before any
+            shopping — so JSCart doesn't ask mid-browse. Options come from
+            Proteus, so a service the shop has switched off is never offered. */}
+        <OrderTypeGate options={await getOrderTypes()} />
         {/* The real cart/checkout is Proteus's JSCart, embedded on /menu. */}
         {children}
         <WarnBand />
