@@ -42,6 +42,9 @@ type Row = { price: number; hasSale: boolean; member: boolean; couponIds: number
 type PatchedFetch = typeof fetch & { __hlCouponPricePatched?: true };
 
 const MARK = "hl-cpnprice";
+/** Marks a price block we have rewritten, and the span we struck through. */
+const DONE = "data-hl-cpn";
+const WAS_PRICE = "data-hl-cpn-shelf";
 const DEALS_URL =
   "https://cart.proteus420.com/highlife/api_cart_v2.cfm?action=deals&accountId=1204&locationId=1";
 
@@ -60,34 +63,53 @@ export default function ProteusCouponPrice() {
       return m ? Number(m[1]) : null;
     };
 
+    /** Put a card back the way JSCart drew it. */
+    const undo = (host: Element) => {
+      host.querySelector(`.${MARK}`)?.remove();
+      host.querySelectorAll(`[${WAS_PRICE}]`).forEach((el) => {
+        el.classList.remove("proteus-price-original");
+        el.removeAttribute(WAS_PRICE);
+      });
+      host.removeAttribute(DONE);
+    };
+
     const paint = () => {
       const shop = document.getElementById("proteus_shop");
       if (!shop) return;
       shop.querySelectorAll(".proteus-product-card").forEach((card) => {
-        const host = card.querySelector(".proteus-product-price");
+        const host = card.querySelector(".proteus-product-price-value");
         if (!host) return;
-        const existing = host.querySelector(`.${MARK}`);
 
         const id = cardId(card);
         const row = id === null ? undefined : rows.get(id);
         const pct = row?.couponIds.map((c) => percentById.get(c)).find((v) => v != null);
 
-        // Rules 1 and 2: a sale price or a member price is already the answer.
-        if (!row || pct == null || row.hasSale || row.member || !(row.price > 0)) {
-          existing?.remove();
+        // Rules 1 and 2, plus tiered products: "View Options" means there is no
+        // one price on the card to take a percentage of.
+        const tiered = !!host.querySelector(".proteus-price-view-options");
+        if (!row || pct == null || row.hasSale || row.member || !(row.price > 0) || tiered) {
+          if (host.hasAttribute(DONE)) undo(host);
           return;
         }
 
-        const now = money(row.price * (1 - pct / 100));
-        const text = `${now} after ${pct}% coupon`;
-        if (existing) {
-          if (existing.textContent !== text) existing.textContent = text;
-          return;
-        }
-        const el = document.createElement("span");
-        el.className = MARK;
-        el.textContent = text;
-        host.appendChild(el);
+        if (host.getAttribute(DONE) === String(pct)) return; // already drawn
+        undo(host); // a different percent: rebuild from clean
+
+        // Strike the shelf price and put the coupon price beside it, using
+        // JSCart's OWN classes — .proteus-price-original and .proteus-price-sale
+        // — so this is identical to a real markdown rather than a lookalike.
+        const shelf = [...host.children].find(
+          (el) => !el.classList.contains(MARK) && /\$/.test(el.textContent ?? ""),
+        );
+        if (!shelf) return;
+        shelf.classList.add("proteus-price-original");
+        shelf.setAttribute(WAS_PRICE, "");
+
+        const sale = document.createElement("span");
+        sale.className = `proteus-price-sale ${MARK}`;
+        sale.textContent = money(row.price * (1 - pct / 100));
+        host.appendChild(sale);
+        host.setAttribute(DONE, String(pct));
       });
     };
 
@@ -177,7 +199,9 @@ export default function ProteusCouponPrice() {
       cancelled = true;
       observer?.disconnect();
       if (patched && window.fetch === patched) window.fetch = original;
-      document.querySelectorAll(`.${MARK}`).forEach((el) => el.remove());
+      document
+        .querySelectorAll(`[${DONE}]`)
+        .forEach((el) => undo(el));
     };
   }, []);
 
