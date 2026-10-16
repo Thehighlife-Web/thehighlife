@@ -8,6 +8,21 @@ import Stats from "./components/Stats";
 import Visit from "./components/Visit";
 import Footer from "./components/Footer";
 
+/**
+ * ⚠️ Render on every request, don't bake this page at build time.
+ *
+ * Until now the root layout read the age-gate cookie, and awaiting cookies()
+ * forced every route to render per request as a side effect. That cookie is
+ * gone (the gate is per tab now), so this has to be asked for out loud.
+ *
+ * It matters because things on this page are supposed to take themselves down
+ * on a date: the event lines in the scrolling strip (activeEventStrip), the
+ * hero campaign (activeHeroPromo) and the featured deal (pickFeaturedDeal).
+ * Built once, their end times would be frozen at build time and the site would
+ * sit there advertising a weekend that has already gone.
+ */
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   return (
     <>

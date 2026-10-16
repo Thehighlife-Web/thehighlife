@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { Baloo_2 } from "next/font/google";
 import "./globals.css";
 import AgeGate from "./components/AgeGate";
@@ -121,43 +120,45 @@ history.replaceState(null,"",_u.pathname+(_qs?"?"+_qs:"")+_u.hash)}}}catch(e){}
 // there for the same reason it's wrong on signage. CSS in globals.css backs this
 // up (.kiosk-page) so the kiosk works even if this script never runs.
 try{if(location.pathname.indexOf("/signage")===0||location.pathname.indexOf("/kiosk")===0){document.documentElement.setAttribute("data-age","ok")}}catch(e){}
-try{if(localStorage.getItem("hl_age_verified")==="1"){document.documentElement.setAttribute("data-age","ok")}}catch(e){}
-try{if(document.cookie.indexOf("hl_age_verified=1")!==-1){document.documentElement.setAttribute("data-age","ok")}}catch(e){}
-// Storage-independent safety net for in-app browsers (Instagram/TikTok/FB) that
-// wipe localStorage AND cookies between pages: if this page was reached FROM a
-// page on our own site, the visitor already cleared the gate (it's a full-screen
-// blocker, so internal navigation is impossible before accepting). Only a first
-// arrival from outside / a direct hit still shows the gate.
-try{if(document.referrer&&document.referrer.indexOf(location.origin+"/")===0){document.documentElement.setAttribute("data-age","ok")}}catch(e){}
+// sessionStorage, NOT localStorage and NOT a cookie: browsers scope it to one
+// tab, so every new tab asks again. The old cookie lasted a year across every
+// tab, which is why the gate looked like it had stopped working on desktop.
+var aged=false;
+try{aged=sessionStorage.getItem("hl_age_verified")==="1";
+if(aged){document.documentElement.setAttribute("data-age","ok")}}catch(e){
+// Only when sessionStorage itself is unavailable: in-app browsers
+// (Instagram/TikTok/FB) wipe storage between pages, and without this they'd be
+// gated on every single page. Arriving FROM our own site means the gate was
+// already cleared — it's a full-screen blocker, so no internal link is
+// reachable before accepting. Normal browsers never reach this, which is what
+// keeps the per-tab promise.
+try{if(document.referrer&&document.referrer.indexOf(location.origin+"/")===0){document.documentElement.setAttribute("data-age","ok")}}catch(e2){}
+}
 try{var d=new Date().toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short"}),
 m={Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
 if(m[d]!==undefined){document.documentElement.setAttribute("data-today",String(m[d]))}}catch(e){}
 })();`;
 
 /**
- * ⚠️ The age gate's verified flag is rendered SERVER-SIDE, on purpose.
+ * ⚠️ The age gate's flag is NOT rendered server-side any more, and must not be.
  *
- * It used to rely solely on the boot script setting data-age="ok" on <html>.
- * That broke on iOS Safari: a diagnostic on a real iPhone reported the flag missing
- * even though the cookie, localStorage AND referrer all survived — React drops
- * DOM attributes it doesn't own when it re-renders the tree at startup, so the
- * gate reappeared on every page load and every refresh (mobile only).
+ * It used to be: the server read a 1-year cookie and baked data-age="ok" into
+ * the HTML. That was done because iOS Safari dropped the attribute the boot
+ * script set — React discards DOM attributes it doesn't own when it hydrates —
+ * so the gate came back on every page load on iPhones.
  *
- * Reading the cookie here makes data-age a real React prop: it's in the HTML on
- * the very first byte (no flash, no JS required) and survives any re-render.
- * Cost: routes render dynamically instead of static. Worth it — a gate that
- * re-prompts every page is far more expensive than a server render.
+ * But a cookie is shared by every tab and window, so that same flag meant a
+ * desktop visitor was asked once and then never again for a year. The gate
+ * looked broken because it effectively was.
+ *
+ * Now the answer lives in sessionStorage, which is per tab, and the iOS problem
+ * is handled where it belongs: AgeGate reads that value into React state and
+ * re-asserts the attribute, so React owns the decision and no re-render can
+ * drop it. Nothing here has to know.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const verified = (await cookies()).get("hl_age_verified")?.value === "1";
-
   return (
-    <html
-      lang="en"
-      className={groovy.variable}
-      data-age={verified ? "ok" : undefined}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={groovy.variable} suppressHydrationWarning>
       <head>
         <InlineScript html={BOOT_SCRIPT} />
         {/*

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { store } from "@/data/site";
 
 const KEY = "hl_age_verified";
@@ -8,49 +8,61 @@ const KEY = "hl_age_verified";
 /**
  * NY requires digital cannabis advertising to keep under-21 visitors out.
  *
- * Visibility is driven entirely by the `data-age` attribute that the boot
- * script in layout.tsx sets before first paint — NOT by React state. That
- * means: identical server/client render (no hydration mismatch), no flash of
- * the gate for returning visitors, and if the script or storage fails, the
- * attribute is simply absent and the gate stays up (fails closed).
+ * ── ONE TAB, ONE ANSWER ──────────────────────────────────────────────────────
+ * Confirming 21+ is remembered in sessionStorage, which browsers scope to a
+ * single tab. So every new tab asks again, which is what the shop wants. It used
+ * to be a 1-year cookie plus localStorage plus a server-rendered flag, and the
+ * effect was that a desktop visitor was asked once and never again for a year —
+ * the gate looked like it had stopped working.
+ *
+ * ⚠️ Deliberately NOT a cookie. A cookie is shared by every tab and window, so
+ * any cookie here defeats the whole point. Don't add one back.
+ *
+ * ── WHY THE ANSWER IS HELD IN TWO PLACES ─────────────────────────────────────
+ * The boot script in layout.tsx sets data-age="ok" before first paint, so moving
+ * between pages in the same tab never flashes the gate. But on iOS Safari React
+ * drops DOM attributes it doesn't own when it hydrates, and the gate used to
+ * come back on every page load there. So this component ALSO reads
+ * sessionStorage into React state and re-asserts the attribute: React owns the
+ * decision, and no re-render can drop it.
+ *
+ * Re-asserting matters for more than the gate — PromoPopup and OrderTypeGate
+ * both wait on data-age before they show anything.
+ *
+ * Fails CLOSED: if the script and storage both fail, nothing sets the attribute,
+ * and globals.css keeps the gate up with the page behind it locked.
  */
 export default function AgeGate() {
   const [denied, setDenied] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
+  // Already said yes in THIS tab: put the attribute back, in case hydration
+  // dropped the one the boot script set. CSS does the hiding from there
+  // (html[data-age="ok"] .agegate), which is why this sets no state — an effect
+  // is for syncing an external system, and the <html> attribute is exactly
+  // that. Setting state here is also what react-hooks/set-state-in-effect
+  // rightly objects to.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(KEY) === "1") {
+        document.documentElement.setAttribute("data-age", "ok");
+      }
+    } catch {
+      /* storage blocked: stay closed and let them answer again */
+    }
+  }, []);
+
   function accept() {
     try {
-      localStorage.setItem(KEY, "1");
+      sessionStorage.setItem(KEY, "1");
     } catch {
-      /* storage blocked — the cookie below still remembers them */
+      /* blocked: it holds for this page via React state below, and the next
+         page asks again — which is the safe way round for an age gate */
     }
-
-    let cookieOk = false;
-    try {
-      // 1-year cookie. This is the flag the SERVER reads to render data-age="ok"
-      // into the HTML on every later request (see app/layout.tsx).
-      document.cookie = `${KEY}=1; path=/; max-age=31536000; SameSite=Lax`;
-      cookieOk = document.cookie.indexOf(`${KEY}=1`) !== -1;
-    } catch {
-      /* cookies blocked — handled below */
-    }
-
     document.documentElement.setAttribute("data-age", "ok");
-
-    if (cookieOk) {
-      // Reload once so the server re-renders with the flag baked in. From here on
-      // it's part of React's own tree, so no re-render can drop it — this is what
-      // stops the gate reappearing on iOS. Only runs when the cookie actually
-      // took, so blocked cookies can't cause a reload loop.
-      window.location.reload();
-      return;
-    }
-    // Cookies blocked: nothing will persist, so hide the gate in React state for
-    // at least this page rather than trapping the visitor behind it.
     setAccepted(true);
   }
 
-  // Cookies blocked — accepted in memory only (see accept()).
   if (accepted) return null;
 
   return (

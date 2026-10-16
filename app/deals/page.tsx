@@ -22,6 +22,10 @@ export const metadata: Metadata = {
  * cards filter it in place the way Proteus built them — which is why the link
  * bridge is off too.
  */
+/** Render per request — see the note in app/page.tsx. The deals here come live
+ *  from Proteus, so a page baked at build time would show a stale shelf. */
+export const dynamic = "force-dynamic";
+
 export default function DealsPage() {
   return (
     <>
