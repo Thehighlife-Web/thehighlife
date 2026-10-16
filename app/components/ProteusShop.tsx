@@ -5,6 +5,7 @@ import AccountLinkPrompt from "./AccountLinkPrompt";
 import ProteusTextFix from "./ProteusTextFix";
 import AuthModalGuard from "./AuthModalGuard";
 import ProteusDateInputFix from "./ProteusDateInputFix";
+import ProteusCouponPrice from "./ProteusCouponPrice";
 import ProteusSearchFix from "./ProteusSearchFix";
 import ProteusSortFix from "./ProteusSortFix";
 import ProteusConfigFix from "./ProteusConfigFix";
@@ -260,6 +261,9 @@ export default function ProteusShop({
       <ProteusSearchFix />
       {/* Puts "Price" and "Name" sorts in the right order — Proteus returns them mixed. */}
       <ProteusSortFix />
+      {/* Shows what a percent-off coupon brings a product down to, on the card,
+          instead of only on the checkout screen. Percent coupons only. */}
+      <ProteusCouponPrice />
       {/* Kiosk: checkout opens straight on phone + birthday. The "Sign In or Quick
           Checkout?" screen is skipped — most customers here have a passwordless
           in-store account and cannot be expected to know which door is theirs. */}

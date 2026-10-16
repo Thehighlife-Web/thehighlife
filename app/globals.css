@@ -805,6 +805,20 @@
       grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
   }
 
+  /* What a percent-off coupon brings the price down to (ProteusCouponPrice).
+     Sits under the shelf price on the card. It names "after N% coupon" on
+     purpose — the cart still shows full price, because Proteus only applies the
+     coupon on its checkout screen, so a bare lower number would read as a bug. */
+  /* The price row is a flex line that doesn't wrap, so a full-width basis alone
+     isn't enough — the note stayed on the price line and ran off the card. Let
+     that row wrap, but ONLY on the cards carrying a note, so every other card's
+     price line is untouched. */
+  #proteus_shop .proteus-product-price:has(.hl-cpnprice){flex-wrap:wrap}
+  #proteus_shop .hl-cpnprice{display:block;width:100%;flex:0 0 100%;
+    margin-top:4px;font-family:var(--mono);
+    font-size:11.5px;font-weight:700;letter-spacing:.02em;line-height:1.35;
+    color:var(--hlc-green,#40d283)}
+
   /* Square product image tiles (JSCart default is a short landscape rectangle) */
   #proteus_shop .proteus-product-image-wrapper{aspect-ratio:1/1!important;height:auto!important}
   #proteus_shop .proteus-product-image{width:100%!important;height:100%!important;object-fit:cover!important}
