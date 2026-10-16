@@ -42,6 +42,18 @@
   nav{position:fixed;top:0;left:0;right:0;z-index:150;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px clamp(20px,5vw,54px);background:linear-gradient(180deg,rgba(8,9,10,.88),rgba(8,9,10,0));backdrop-filter:blur(8px);transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
   nav.solid{background:rgba(8,9,10,.92);border-bottom:1px solid var(--line)}
 
+  /* Standing announcement, the very top line of the fixed header
+     (components/AnnounceBar.tsx). Deliberately quieter than the green category
+     banner below it — it's a standing fact, not a call to action, and two loud
+     green bars stacked would fight. */
+  .announce{display:block;text-align:center;text-decoration:none;
+    padding:7px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--green);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .2s}
+  .announce:hover{background:var(--panel)}
+  @media(max-width:560px){.announce{font-size:10px;letter-spacing:.08em;padding:6px 10px}}
+
   /* Two-row fixed header: main bar + green category banner underneath */
   #nav{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0}
   .nav-main{position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px clamp(20px,5vw,54px)}
@@ -162,8 +174,14 @@
        .catbar    = 12.5px/1.35 text + 10px padding x2 + 1px top border = 41
      ⚠️ The 560px breakpoint must stay in step with the .brand-logo / .nav-main
      one above — they are the reason the height changes at all. */
-  .storetour{background:#000;padding-top:129px}
-  @media(max-width:560px){.storetour{padding-top:109px}}
+  /* ⚠️ The reserved space is MEASURED, not typed. The fixed header's height
+     changes with what's in it — the announcement line, the deal strip coming
+     and going as deals end — so a hard-coded number was wrong the moment either
+     appeared, and the nav sat on the video. StoreTour measures #nav and sets
+     --storetour-top. The fallbacks below are only for the instant before that
+     runs, and for JavaScript being off. */
+  .storetour{background:#000;padding-top:var(--storetour-top,129px)}
+  @media(max-width:560px){.storetour{padding-top:var(--storetour-top,109px)}}
   /* The frame, not the section, is the positioning context — so the Play button
      covers the picture and not the reserved header strip above it. */
   .storetour-frame{position:relative;line-height:0}

@@ -125,6 +125,25 @@ export const eventStrip: { lines: string[]; endsAt: string } | null = {
 };
 
 /**
+ * ── ANNOUNCEMENT STRIP ──
+ *
+ * The thin line pinned above everything, at the very top of the nav
+ * (components/AnnounceBar.tsx). For one standing message — not deals, which
+ * have their own rotating strip below it (dealsOfTheDay).
+ *
+ * Set to null to take it down. Keep it SHORT: it has to hold one line on a
+ * phone without wrapping into a band.
+ *
+ * ⚠️ This makes the fixed header taller. The homepage video sits directly under
+ * that header and measures it at runtime (components/StoreTour.tsx), so nothing
+ * needs adjusting by hand — but don't reintroduce a hard-coded header height.
+ */
+export const announceBar: { text: string; href: string } | null = {
+  text: "Delivery now available — Long Island & NYC",
+  href: "/menu",
+};
+
+/**
  * ── POP-UP PROMO ──
  *
  * The promo shown once a day per device, straight after the 21+ gate

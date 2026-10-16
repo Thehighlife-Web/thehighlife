@@ -43,7 +43,15 @@ import type { OrderType } from "@/lib/orderTypes";
  * would like to shop is nonsense.
  */
 
+/** JSCart's own key. The widget reads this, so it stays in localStorage. */
 const STORAGE_KEY = "proteus_shoptype_highlife";
+/**
+ * Whether this TAB has been asked. Separate from the answer on purpose: the
+ * widget needs the choice to persist, but the question should follow the 21+
+ * gate, which is now asked once per tab. Without this, a returning visitor was
+ * never asked again — which on a desktop meant never.
+ */
+const ASKED_KEY = "hl_shoptype_asked";
 const PENDING_ATTR = "data-hl-shoptype-pending";
 
 type WidgetWindow = Window & {
@@ -55,11 +63,12 @@ export default function OrderTypeGate({ options }: { options: OrderType[] }) {
   const [open, setOpen] = useState(false);
   const firstRef = useRef<HTMLButtonElement>(null);
 
-  const stored = useCallback(() => {
+  /** Has this tab already been asked? */
+  const askedHere = useCallback(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY);
+      return sessionStorage.getItem(ASKED_KEY) === "1";
     } catch {
-      return null; // private mode: ask, which is the harmless way round
+      return false; // private mode: ask, which is the harmless way round
     }
   }, []);
 
@@ -67,7 +76,7 @@ export default function OrderTypeGate({ options }: { options: OrderType[] }) {
     if (path.startsWith("/kiosk") || path.startsWith("/signage")) return;
     // Nothing to ask when the shop only does one thing.
     if (options.length < 2) return;
-    if (stored()) return;
+    if (askedHere()) return;
 
     const html = document.documentElement;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -97,7 +106,7 @@ export default function OrderTypeGate({ options }: { options: OrderType[] }) {
       mo.disconnect();
       clearTimeout(timer);
     };
-  }, [path, options.length, stored]);
+  }, [path, options.length, askedHere]);
 
   // Hold the page still behind it and put the keyboard on the first choice.
   useEffect(() => {
@@ -109,9 +118,17 @@ export default function OrderTypeGate({ options }: { options: OrderType[] }) {
 
   const pick = (token: string) => {
     try {
+      // The answer persists — the widget reads it on every page and carries it
+      // to checkout.
       localStorage.setItem(STORAGE_KEY, token);
     } catch {
       /* private mode: the widget will ask in its own time */
+    }
+    try {
+      // The ASKING is per tab, so this tab stops asking but the next one will.
+      sessionStorage.setItem(ASKED_KEY, "1");
+    } catch {
+      /* private mode: it may ask again on the next page; harmless */
     }
     (window as WidgetWindow).ProteusWidget?.setShopType?.(token);
     document.documentElement.removeAttribute(PENDING_ATTR);
