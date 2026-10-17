@@ -47,10 +47,6 @@ import ProteusShop from "./ProteusShop";
  *     pushState(); without this every tab tap would add a Back step that appears
  *     to do nothing. They're made replaces for the duration of each call.
  *
- * It also sets data-hl-onsale-newest on <html> so ProteusSortFix orders the
- * on-sale tab newest first (see sortByNewest for what that can mean). Only while
- * this component is mounted, and it only affects on-sale requests.
- *
  * Checkout still requires JSCart's "powered by" footer to be visible (it refuses
  * otherwise), so the CSS leaves it in place.
  */
@@ -110,9 +106,6 @@ export default function LiveShopRow({ hasOnSale }: { hasOnSale: boolean }) {
 
   // 2 + 3. Installed on mount — before the widget exists, so before its listeners.
   useEffect(() => {
-    const html = document.documentElement;
-    html.setAttribute("data-hl-onsale-newest", "");
-
     const onPop = (e: PopStateEvent) => {
       if (WIDGET_HASH.test(location.hash)) return;
       e.stopImmediatePropagation();
@@ -132,7 +125,6 @@ export default function LiveShopRow({ hasOnSale }: { hasOnSale: boolean }) {
     return () => {
       window.removeEventListener("popstate", onPop);
       if (window.scrollTo === guarded) window.scrollTo = nativeScrollTo;
-      html.removeAttribute("data-hl-onsale-newest");
     };
   }, []);
 

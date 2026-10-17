@@ -50,17 +50,23 @@ function sortOf(input: RequestInfo | URL): string | null {
     const url = new URL(raw, location.href);
     if (!/\/api_cart_v2\.cfm$/i.test(url.pathname)) return null;
     if (url.searchParams.get("action") !== "products") return null;
-    // The homepage's "On Sale" tab asks for newest first by flagging <html>.
-    // Only on-sale lists, only while that flag is set. (It led with the biggest
-    // markdown until 13 Oct 2026 — see sortByNewest for what "newest" can and
-    // can't mean here.)
-    if (
-      url.searchParams.get("onsale") === "1" &&
-      document.documentElement.hasAttribute("data-hl-onsale-newest")
-    ) {
+    const sortby = url.searchParams.get("sortby");
+
+    // Anything on sale leads with the newest, everywhere the shop runs — the
+    // menu's On Sale view, the homepage row, /deals and the kiosk. It used to be
+    // gated on a flag only the homepage row set, so the menu's On Sale list
+    // quietly kept Proteus's own order. (See sortByNewest for what "newest" can
+    // and can't mean: there is no sale date in their API.)
+    //
+    // ⚠️ `sortby=name` counts as "no choice made". Opening On Sale always sends
+    // sortby=name — that's the widget's default, not the shopper's pick — and
+    // picking anything from the dropdown sends something else, so this leaves a
+    // real choice alone. The one casualty: deliberately choosing "Name A-Z"
+    // while on sale gives newest instead, because the widget sends exactly the
+    // same thing for both and the two cannot be told apart.
+    if (url.searchParams.get("onsale") === "1" && (!sortby || sortby === "name")) {
       return "newest";
     }
-    const sortby = url.searchParams.get("sortby");
     return sortby && FIXED_SORTS.has(sortby) ? sortby : null;
   } catch {
     return null;
