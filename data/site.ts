@@ -139,7 +139,7 @@ export const eventStrip: { lines: string[]; endsAt: string } | null = {
  * needs adjusting by hand — but don't reintroduce a hard-coded header height.
  */
 export const announceBar: { text: string; href: string } | null = {
-  text: "Delivery now available — Long Island & NYC",
+  text: "Delivery now available — Long Island",
   href: "/menu",
 };
 
