@@ -86,8 +86,14 @@ export default function ProteusSortFix() {
      * fine — the widget re-requests on every filter and tab, so the note is in
      * place by the time anyone has read the first row.
      */
+    // Time-boxed: the note is a nicety, and a shop that waits on a nicety is a
+    // broken shop. If it hasn't landed in four seconds the request is dropped
+    // and on-sale lists order by product id, as they did before any of this.
     let firstSeen: Record<string, string> = {};
-    const noteLoaded = original("/api/onsale-seen", { cache: "no-store" })
+    const noteLoaded = original("/api/onsale-seen", {
+      cache: "no-store",
+      signal: AbortSignal.timeout(4000),
+    })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d && d.firstSeen) firstSeen = d.firstSeen;

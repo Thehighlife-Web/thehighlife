@@ -31,6 +31,37 @@ const KEY = "first-seen";
 /** How stale the note may get before a request refreshes it. */
 const MAX_AGE_MS = 10 * 60 * 1000;
 
+/**
+ * ⚠️ EVERY call out of this file is time-boxed, and that is not belt-and-braces.
+ * The first deploy of this hung: the route never answered and a request sat
+ * there for 30 seconds. Proteus was answering in under a second, so it was the
+ * blob read — reading with strong consistency blocked in Netlify's Next runtime.
+ * Strong consistency is gone (the note is a cache; a few seconds of staleness is
+ * meaningless here) and nothing is awaited unbounded any more.
+ *
+ * A note that arrives late is worth nothing. A page that waits for it is worth
+ * less than nothing.
+ */
+const BLOB_TIMEOUT_MS = 2500;
+const FETCH_TIMEOUT_MS = 5000;
+
+/** Resolves to `fallback` if the promise hasn't settled in time. */
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    p.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 const ON_SALE_URL =
   "https://cart.proteus420.com/highlife/api_cart_v2.cfm" +
   "?action=products&onsale=1&accountId=1204&locationId=1&page=1&limit=400";
@@ -46,12 +77,16 @@ const EMPTY: SaleSeen = { firstSeen: {}, updatedAt: null };
 function store() {
   // Throws when the blob credentials aren't present (local `next start`, a
   // preview without blobs). Callers treat that as "no note yet".
-  return getStore({ name: STORE, consistency: "strong" });
+  // Default consistency on purpose — see the note above BLOB_TIMEOUT_MS.
+  return getStore(STORE);
 }
 
 /** The ids Proteus says are on sale right now. */
 async function currentOnSaleIds(): Promise<string[]> {
-  const res = await fetch(ON_SALE_URL, { cache: "no-store" });
+  const res = await fetch(ON_SALE_URL, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
   if (!res.ok) throw new Error(`on-sale list: ${res.status}`);
   const data = await res.json();
   const list: { id?: number | string }[] = Array.isArray(data?.products) ? data.products : [];
@@ -73,7 +108,11 @@ export async function getSaleSeen(): Promise<SaleSeen> {
 
   try {
     blob = store();
-    const saved = (await blob.get(KEY, { type: "json" })) as SaleSeen | null;
+    const saved = await withTimeout(
+      blob.get(KEY, { type: "json" }) as Promise<SaleSeen | null>,
+      BLOB_TIMEOUT_MS,
+      null,
+    );
     if (saved && saved.firstSeen) note = saved;
   } catch {
     return EMPTY; // no store: the shop orders by product id, as before
@@ -93,7 +132,10 @@ export async function getSaleSeen(): Promise<SaleSeen> {
     // Anything no longer on sale is forgotten on purpose: if it comes back next
     // month that IS a new markdown, and should lead the row again.
     const fresh: SaleSeen = { firstSeen, updatedAt: now };
-    await blob.setJSON(KEY, fresh);
+    // Don't make the caller wait on the write either — the map is already
+    // computed, and a write that's still in flight loses nothing but a few
+    // minutes of freshness.
+    await withTimeout(blob.setJSON(KEY, fresh), BLOB_TIMEOUT_MS, undefined);
     return fresh;
   } catch {
     return note; // Proteus down or write failed: last known note is still useful
