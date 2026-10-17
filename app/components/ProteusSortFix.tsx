@@ -78,6 +78,25 @@ export default function ProteusSortFix() {
     const original = window.fetch as PatchedFetch;
     if (original.__hlSortPatched) return; // StrictMode / remount guard
 
+    /**
+     * When each product first turned up on sale — the site's own note, because
+     * Proteus publishes no sale date (lib/saleSeen.ts). Fetched once and held
+     * here; until it lands, and forever if it never does, on-sale lists order
+     * by product id exactly as they did before. A sale list arriving first is
+     * fine — the widget re-requests on every filter and tab, so the note is in
+     * place by the time anyone has read the first row.
+     */
+    let firstSeen: Record<string, string> = {};
+    const noteLoaded = original("/api/onsale-seen", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && d.firstSeen) firstSeen = d.firstSeen;
+      })
+      .catch(() => {
+        /* no note: product id ordering, as before */
+      });
+    void noteLoaded;
+
     const patched = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const res = await original(input, init);
       const sortby = sortOf(input);
@@ -86,7 +105,9 @@ export default function ProteusSortFix() {
         const data = await res.clone().json();
         if (!data || !Array.isArray(data.products)) return res;
         data.products =
-          sortby === "newest" ? sortByNewest(data.products) : sortProducts(data.products, sortby);
+          sortby === "newest"
+            ? sortByNewest(data.products, firstSeen)
+            : sortProducts(data.products, sortby);
         // The body is re-encoded, so the old length/encoding no longer describe it.
         const headers = new Headers(res.headers);
         headers.delete("content-length");

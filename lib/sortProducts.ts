@@ -82,12 +82,38 @@ export function sortBySavings<T extends SortableProduct>(products: T[]): T[] {
  * If a real "just went on sale" order is ever wanted, Proteus has to publish a
  * sale-start or last-updated field; there is no way to derive it from this.
  */
-export function sortByNewest<T extends SortableProduct>(products: T[]): T[] {
+export function sortByNewest<T extends SortableProduct>(
+  products: T[],
+  /**
+   * product id -> when we first saw it on sale (lib/saleSeen.ts). Optional: the
+   * site keeps this note itself because Proteus has no sale date. With it, the
+   * order is genuinely "most recently discounted". Without it — the note is
+   * empty, the store is unreachable, or this isn't an on-sale list — it falls
+   * back to product id, which is what the row did before.
+   */
+  firstSeen?: Record<string, string>,
+): T[] {
   const idOf = (p: T) => {
     const n = typeof p.id === "number" ? p.id : parseFloat(String(p.id ?? ""));
     return Number.isFinite(n) ? n : null;
   };
+  const seenAt = (p: T) => {
+    const iso = firstSeen?.[String(p.id)];
+    if (!iso) return null;
+    const t = Date.parse(iso);
+    return Number.isFinite(t) ? t : null;
+  };
+
   return [...products].sort((a, b) => {
+    const sa = seenAt(a);
+    const sb = seenAt(b);
+    // Most recently marked down first. Anything we've never seen go on sale
+    // sorts below everything we have — it's been there longer than our note.
+    if (sa !== null || sb !== null) {
+      if (sa === null) return 1;
+      if (sb === null) return -1;
+      if (sb !== sa) return sb - sa;
+    }
     const ia = idOf(a);
     const ib = idOf(b);
     // Anything without a usable id goes last rather than floating to the top.
