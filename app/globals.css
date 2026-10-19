@@ -174,14 +174,23 @@
        .catbar    = 12.5px/1.35 text + 10px padding x2 + 1px top border = 41
      ⚠️ The 560px breakpoint must stay in step with the .brand-logo / .nav-main
      one above — they are the reason the height changes at all. */
-  /* ⚠️ The reserved space is MEASURED, not typed. The fixed header's height
-     changes with what's in it — the announcement line, the deal strip coming
-     and going as deals end — so a hard-coded number was wrong the moment either
-     appeared, and the nav sat on the video. StoreTour measures #nav and sets
-     --storetour-top. The fallbacks below are only for the instant before that
-     runs, and for JavaScript being off. */
-  .storetour{background:#000;padding-top:var(--storetour-top,129px)}
-  @media(max-width:560px){.storetour{padding-top:var(--storetour-top,109px)}}
+  /* ⚠️ The space under the fixed header is MEASURED, not typed, and it belongs
+     to this wrapper rather than to whatever happens to be first inside it. The
+     header's height changes with what's in it — the announcement line, the deal
+     strip coming and going as deals end — so a hard-coded number was wrong the
+     moment either appeared and the nav sat on the video. HeaderClearance
+     measures #nav and sets --hl-header. The fallbacks are only for the instant
+     before that runs, and for JavaScript being off.
+     Putting it on the wrapper means the banner and the video can swap places
+     without the spacing moving. */
+  .below-header{background:#000;padding-top:var(--hl-header,161px)}
+  @media(max-width:560px){.below-header{padding-top:var(--hl-header,137px)}}
+
+  /* Full-width brand banner (components/PromoBanner.tsx). */
+  .promobanner{display:block;line-height:0;background:#000}
+  .promobanner img{width:100%;height:auto;display:block}
+
+  .storetour{background:#000}
   /* The frame, not the section, is the positioning context — so the Play button
      covers the picture and not the reserved header strip above it. */
   .storetour-frame{position:relative;line-height:0}

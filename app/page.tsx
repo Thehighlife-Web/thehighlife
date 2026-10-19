@@ -1,6 +1,8 @@
 import ScrollEffects from "./components/ScrollEffects";
 import Nav from "./components/Nav";
 import StoreTour from "./components/StoreTour";
+import PromoBanner from "./components/PromoBanner";
+import HeaderClearance from "./components/HeaderClearance";
 import { Marquee, DealsBand } from "./components/Deals";
 import LiveShelf from "./components/LiveShelf";
 import Categories from "./components/Categories";
@@ -30,10 +32,16 @@ export default function Page() {
       <ScrollEffects />
       <div className="rail" id="rail" />
       <Nav />
-      {/* The video IS the top of the page. The old <Hero /> — storefront photo,
-          headline and the Grand Opening banner — was taken out on Elijah's ask;
-          components/Hero.tsx is still there if it's ever wanted back. */}
-      <StoreTour />
+      {/* The top of the page. The wrapper reserves the fixed header's height, so
+          the banner and the video can be swapped by moving one line and nothing
+          else shifts. The old <Hero /> — storefront photo, headline and the
+          Grand Opening banner — came out on Elijah's ask; components/Hero.tsx is
+          still there if it's ever wanted back. */}
+      <HeaderClearance />
+      <div className="below-header">
+        <PromoBanner />
+        <StoreTour />
+      </div>
       <Marquee />
       <DealsBand />
       {/* live markdowns, straight from the register */}

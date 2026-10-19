@@ -125,6 +125,28 @@ export const eventStrip: { lines: string[]; endsAt: string } | null = {
 };
 
 /**
+ * ── HOMEPAGE BRAND BANNER ──
+ *
+ * The full-width artwork at the top of the homepage (components/PromoBanner).
+ * Artwork: public/images/brass-knuckles-bogo.webp.
+ *
+ * ⚠️ `href` filters the menu to a COUPON by its Proteus id — the same link
+ * JSCart's own deal cards use. Today coupon 7 is "Brass Knuckles 510 and AIO
+ * BOGO". A deal rebuilt in Proteus gets a NEW id, and this would then quietly
+ * open the wrong shelf rather than break, so check the id itself whenever the
+ * artwork changes:
+ *   api_cart_v2.cfm?action=deals  ->  find the deal, read its id
+ *
+ * Set to null to take the banner down. Whether it sits above or below the video
+ * is decided in app/page.tsx — they share one wrapper, so swapping them is a
+ * line move and nothing else shifts.
+ */
+export const promoBanner: { href: string; alt: string } | null = {
+  href: "/menu#view=products&coupon=7",
+  alt: "Brass Knuckles 510 and AIO — buy one get one for a penny, limited time. Shop the deal.",
+};
+
+/**
  * ── ANNOUNCEMENT STRIP ──
  *
  * The thin line pinned above everything, at the very top of the nav

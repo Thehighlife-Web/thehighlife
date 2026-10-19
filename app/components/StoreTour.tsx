@@ -44,34 +44,11 @@ function savingData(): boolean {
 
 export default function StoreTour() {
   const ref = useRef<HTMLVideoElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
   const [needsTap, setNeedsTap] = useState(false);
 
-  // Reserve exactly the fixed header's height above the video.
-  //
-  // ⚠️ MEASURED, never typed. The header's height changes with what's in it —
-  // the announcement line, the deal strip appearing and disappearing as deals
-  // end, the logo shrinking on small screens. It was a hard-coded 129/109px,
-  // which was right only while the header happened to hold what it held that
-  // day; anything added put the nav back on top of the picture. The observer
-  // keeps it honest through all of it.
-  useEffect(() => {
-    const nav = document.getElementById("nav");
-    const section = sectionRef.current;
-    if (!nav || !section) return;
-    const apply = () => {
-      const h = Math.round(nav.getBoundingClientRect().height);
-      if (h > 0) section.style.setProperty("--storetour-top", `${h}px`);
-    };
-    apply();
-    const ro = new ResizeObserver(apply);
-    ro.observe(nav);
-    window.addEventListener("resize", apply);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", apply);
-    };
-  }, []);
+  // Clearing the fixed header is NOT this component's job any more: a banner can
+  // sit above the video now, so the reserved space belongs to the wrapper that
+  // holds them both (.below-header, fed by HeaderClearance).
 
   useEffect(() => {
     const video = ref.current;
@@ -102,13 +79,8 @@ export default function StoreTour() {
 
   return (
     // id="top" moved here from the old hero — it's what the footer's
-    // "Back to top" link points at, and this is the top of the page now.
-    <section
-      ref={sectionRef}
-      id="top"
-      className="storetour"
-      aria-label="A walk through The High Life Dispensary"
-    >
+    // "Back to top" link points at.
+    <section id="top" className="storetour" aria-label="A walk through The High Life Dispensary">
       <div className="storetour-frame">
         <video
           ref={ref}
