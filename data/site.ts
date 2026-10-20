@@ -141,10 +141,16 @@ export const eventStrip: { lines: string[]; endsAt: string } | null = {
  * is decided in app/page.tsx — they share one wrapper, so swapping them is a
  * line move and nothing else shifts.
  */
-export const promoBanner: { href: string; alt: string } | null = {
-  href: "/menu#view=products&coupon=7",
-  alt: "Brass Knuckles 510 and AIO — buy one get one for a penny, limited time. Shop the deal.",
-};
+export const promoBanner: { href: string; alt: string } | null = null;
+
+/* Taken down 20 Oct 2026. The Brass Knuckles BOGO lived here:
+ *   href: "/menu#view=products&coupon=7",
+ *   alt:  "Brass Knuckles 510 and AIO — buy one get one for a penny, limited
+ *          time. Shop the deal.",
+ * Artwork is still at public/images/brass-knuckles-bogo.webp, so putting it
+ * back is this object again. For a DIFFERENT brand: new artwork, change the
+ * import in components/PromoBanner.tsx, and look up that deal's own coupon id
+ * (api_cart_v2.cfm?action=deals) — ids are not reusable between deals. */
 
 /**
  * ── ANNOUNCEMENT STRIP ──
