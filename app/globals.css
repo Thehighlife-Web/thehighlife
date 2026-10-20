@@ -186,9 +186,19 @@
   .below-header{background:#000;padding-top:var(--hl-header,161px)}
   @media(max-width:560px){.below-header{padding-top:var(--hl-header,137px)}}
 
-  /* Full-width brand banner (components/PromoBanner.tsx). */
-  .promobanner{display:block;line-height:0;background:#000}
-  .promobanner img{width:100%;height:auto;display:block}
+  /* Brand banner (components/PromoBanner.tsx).
+     ⚠️ max-width is the artwork's OWN width, so it is only ever scaled down.
+     The current file is a 728x90 web-ad leaderboard; stretched full-bleed it
+     would be a 2x upscale on a laptop and 4x on a retina screen. Raise this to
+     match a wider file (the old Brass Knuckles artwork was 1983px and ran
+     full-bleed at 100%).
+
+     The link hugs the artwork (fit-content) rather than spanning the page: a
+     full-width anchor around a centred 728px image makes the whole black band
+     clickable, so a click far from the banner would navigate. The black comes
+     from .below-header behind it. */
+  .promobanner{display:block;width:fit-content;max-width:100%;margin:0 auto;line-height:0}
+  .promobanner img{width:100%;max-width:728px;height:auto;display:block}
 
   .storetour{background:#000}
   /* The frame, not the section, is the positioning context — so the Play button
