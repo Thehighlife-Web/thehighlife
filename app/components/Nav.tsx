@@ -6,6 +6,7 @@ import { store } from "@/data/site";
 import CategoryBar from "./CategoryBar";
 import DealBanner from "./DealBanner";
 import AnnounceBar from "./AnnounceBar";
+import NavSearch from "./NavSearch";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -98,6 +99,13 @@ export default function Nav() {
           <img className="brand-logo" src="/images/logo.webp" alt={store.name} />
         </a>
 
+        {/* Shop search, beside the logo. ⚠️ NOT in .nav-right: the page links
+            are absolutely centred, so they push nothing aside, and a search box
+            on the right grew leftwards until it sat on top of "About". The dead
+            space after the logo is the one place in this row that nothing else
+            wants. Narrow screens hide it here and use the drawer instead. */}
+        <NavSearch variant="bar" />
+
         {/* desktop links */}
         <div className="navlinks">
           {LINKS.map((l) => {
@@ -171,6 +179,8 @@ export default function Nav() {
 
       {/* mobile drawer */}
       <div className={`nav-drawer${open ? " open" : ""}`} role="dialog" aria-modal="true" aria-label="Menu">
+        {/* On phones the search lives here, where there's room for it. */}
+        <NavSearch variant="drawer" />
         {LINKS.map((l) => {
           const on = path === l.href;
           return (
