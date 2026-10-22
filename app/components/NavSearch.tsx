@@ -26,7 +26,7 @@ import { usePathname } from "next/navigation";
  *
  * An empty box does nothing rather than loading every product.
  */
-export default function NavSearch({ variant }: { variant: "bar" | "drawer" }) {
+export default function NavSearch() {
   const path = usePathname() ?? "";
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,16 +61,16 @@ export default function NavSearch({ variant }: { variant: "bar" | "drawer" }) {
 
   return (
     <form
-      className={variant === "drawer" ? "navsearch navsearch-drawer" : "navsearch"}
+      className="navsearch"
       role="search"
       onSubmit={submit}
     >
-      <label className="sr-only" htmlFor={`navsearch-${variant}`}>
+      <label className="sr-only" htmlFor="navsearch-input">
         Search products
       </label>
       <input
         ref={inputRef}
-        id={`navsearch-${variant}`}
+        id="navsearch-input"
         type="search"
         className="navsearch-input"
         placeholder="Search products"
