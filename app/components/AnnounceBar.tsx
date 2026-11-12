@@ -1,8 +1,8 @@
 import { announceBar } from "@/data/site";
 
 /**
- * The thin standing message pinned above everything — currently that delivery
- * now reaches Long Island and NYC.
+ * The standing message pinned above everything — currently the 20%-off-first-
+ * delivery offer and its code.
  *
  * Lives INSIDE the fixed nav, above the deal strip, for the same reason the
  * deal strip does: the nav is position:fixed, so a bar sitting above it would

@@ -43,16 +43,31 @@
   nav.solid{background:rgba(8,9,10,.92);border-bottom:1px solid var(--line)}
 
   /* Standing announcement, the very top line of the fixed header
-     (components/AnnounceBar.tsx). Deliberately quieter than the green category
-     banner below it — it's a standing fact, not a call to action, and two loud
-     green bars stacked would fight. */
+     (components/AnnounceBar.tsx). It used to be deliberately quiet — a standing
+     fact rather than a call to action. It now carries an offer with a code, so
+     it's sized up and lit: the glow is what stops it reading as fine print.
+     It still has to hold ONE line on a phone without wrapping into a band,
+     which is why the small-screen sizes below are as tight as they are —
+     measured at 320/360/390 against the current wording. A much longer message
+     will hit the ellipsis; re-measure if the copy grows. */
   .announce{display:block;text-align:center;text-decoration:none;
-    padding:7px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);
-    font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;
+    padding:9px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.12em;
     text-transform:uppercase;color:var(--green);
+    text-shadow:0 0 8px rgba(59,232,127,.5),0 0 20px rgba(59,232,127,.26);
+    animation:announce-glow 2.8s ease-in-out infinite;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .2s}
   .announce:hover{background:var(--panel)}
-  @media(max-width:560px){.announce{font-size:10px;letter-spacing:.08em;padding:6px 10px}}
+  /* Breathing rather than blinking — it should pull the eye once, not nag. */
+  @keyframes announce-glow{
+    0%,100%{text-shadow:0 0 8px rgba(59,232,127,.5),0 0 20px rgba(59,232,127,.26)}
+    50%{text-shadow:0 0 14px rgba(59,232,127,.85),0 0 30px rgba(59,232,127,.45)}
+  }
+  @media(prefers-reduced-motion:reduce){.announce{animation:none}}
+  /* Letter-spacing is the first thing to give: it buys more characters per line
+     than font-size does, and costs less legibility at these sizes. */
+  @media(max-width:560px){.announce{font-size:13px;letter-spacing:.05em;padding:8px 10px}}
+  @media(max-width:390px){.announce{font-size:12px;letter-spacing:.01em;padding:8px 7px}}
 
   /* Two-row fixed header: main bar + green category banner underneath */
   #nav{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0}

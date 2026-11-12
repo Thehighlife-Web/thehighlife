@@ -182,7 +182,7 @@ export const promoBanner: { href: string; alt: string } | null = null;
  * needs adjusting by hand — but don't reintroduce a hard-coded header height.
  */
 export const announceBar: { text: string; href: string } | null = {
-  text: "Delivery now available — Long Island",
+  text: "20% off your first delivery: code THL20",
   href: "/menu",
 };
 
