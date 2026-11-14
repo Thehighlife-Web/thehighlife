@@ -36,6 +36,13 @@ declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ProteusWidget?: any;
+    /**
+     * Set once a cart-only widget has been init()-ed. window.ProteusWidget exists
+     * a moment BEFORE that (the script has run; our onload hasn't), and an add()
+     * in that gap would save over the customer's existing cart — init() is what
+     * loads it from storage. Anything calling add() waits for this.
+     */
+    __hlCartReady?: boolean;
   }
 }
 
@@ -46,13 +53,21 @@ declare global {
  * staff exit, bigger touch targets, and orders flagged `kiosk` in Proteus.
  * Used by /kiosk for the in-store tablets. Requires mode "full", which we
  * already pass. `kioskTimeout` is in MINUTES.
+ *
+ * `cartOnly` runs JSCart in its "badge" mode instead: the real cart, sign-in and
+ * checkout, but NO product grid — so none of the shop's product and deal images.
+ * Used by the homepage's On Sale shelf (components/SaleShelf), whose Add buttons
+ * call ProteusWidget.add() straight into this cart. Measured: ~300KB and five
+ * requests, against ~34MB of deal artwork when the full shop ran on the homepage.
  */
 export default function ProteusShop({
   kiosk = false,
   kioskTimeout = 3,
+  cartOnly = false,
 }: {
   kiosk?: boolean;
   kioskTimeout?: number;
+  cartOnly?: boolean;
 } = {}) {
   const started = useRef(false);
   // The kiosk and the website have separate switches (data/proteus-stock.ts).
@@ -62,15 +77,17 @@ export default function ProteusShop({
   // jumps). On this page the widget lazy-loads dozens of product images, and
   // each reflow restarts the in-flight smooth-scroll animation — which makes the
   // page feel frozen / impossible to scroll. Force instant scrolling while the
-  // shop is mounted, and restore on unmount.
+  // shop is mounted, and restore on unmount. (Not in cart-only mode: there's no
+  // grid of images, and the homepage's anchor jumps should stay smooth.)
   useEffect(() => {
+    if (cartOnly) return;
     const html = document.documentElement;
     const prev = html.style.scrollBehavior;
     html.style.scrollBehavior = "auto";
     return () => {
       html.style.scrollBehavior = prev;
     };
-  }, []);
+  }, [cartOnly]);
 
   useEffect(() => {
     if (started.current) return; // guard React 18/19 StrictMode double-run
@@ -114,6 +131,25 @@ export default function ProteusShop({
 
     const init = () => {
       if (!window.ProteusWidget) return;
+      if (cartOnly) {
+        window.ProteusWidget.init(
+          stock
+            ? { client: "highlife", mode: "badge" }
+            : {
+                client: "highlife",
+                mode: "badge", // cart + sign-in + checkout, no product grid
+                theme: "dark",
+                // Same as the website's full shop below — see the long notes there
+                // on why checkoutUrl is the branded host and baseUrl stays unset.
+                checkoutUrl: "https://cart.thehighlifeny.com",
+                anonCheckout: false,
+              },
+        );
+        // init() loads the saved cart synchronously (before its first await), so
+        // from here an add() lands on top of what's already in it.
+        window.__hlCartReady = true;
+        return;
+      }
       if (stock) {
         // Stock: Proteus's own embed recipe and nothing else. Every other option is
         // left at JSCart's defaults — light theme, "Shop Products", their checkout
@@ -232,6 +268,24 @@ export default function ProteusShop({
     script.onload = init;
     document.body.appendChild(script);
   }, []);
+
+  if (cartOnly) {
+    // Only the patches that touch the cart, sign-in and registration — those can
+    // all open from the homepage now. The grid patches (search, sort, coupon
+    // prices on cards) have nothing to act on without a grid, and two of them
+    // would fetch data for it, so they stay on /menu.
+    return stock ? null : (
+      <>
+        <ProteusConfigFix />
+        <ProteusTextFix />
+        <AuthModalGuard />
+        <ProteusDateInputFix />
+        <ProteusStockLimit />
+        <AccountLinkPrompt />
+        <PickupTimeHint />
+      </>
+    );
+  }
 
   if (stock) {
     // A different id on purpose: every brand-skin rule in globals.css is scoped to

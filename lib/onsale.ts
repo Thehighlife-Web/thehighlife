@@ -45,6 +45,14 @@ export type SaleItem = {
   pct: number;
   /** A coupon saving Proteus applies at checkout — the cart shows `was` until then. */
   atCheckout: boolean;
+  /**
+   * The price handed to ProteusWidget.add() — JSCart's own rule for its Add button
+   * (`salePrice || price`). So a price cut goes in at the sale price, and a coupon
+   * item at shelf price, with checkout taking the coupon off. Same as on /menu.
+   */
+  cartPrice: number;
+  /** Units on the shelf, so Add can stop where JSCart's own button would. 0 = unknown. */
+  inventory: number;
 };
 
 export type SaleTab = { label: string; cat: number; items: SaleItem[] };
@@ -99,6 +107,7 @@ type RawProduct = {
   salePrice?: number | string;
   onSale?: boolean;
   hasCustomerPrice?: boolean;
+  inventory?: number | string;
   /** Sold by size only — the widget shows "View Options" instead of a price. */
   subsOnly?: boolean | number | string;
   coupons?: RawCoupon[];
@@ -167,6 +176,9 @@ function toSaleItem(p: RawProduct, percentDeals: Map<string, number>): SaleItem 
   const isCannabis = toNum(p.thc) > 0 || toNum(p.cbd) > 0;
   // A size-only product's `price` is a base unit price, not what anyone pays.
   if (!name || was <= 0 || !inStock || !isCannabis || truthy(p.subsOnly) || p.id == null) return null;
+  // Member pricing: we can't know which price that customer sees, and JSCart's Add
+  // would put the member price in the cart — not the one on our card. Leave it out.
+  if (p.hasCustomerPrice) return null;
 
   const base = {
     id: String(p.id),
@@ -174,25 +186,26 @@ function toSaleItem(p: RawProduct, percentDeals: Map<string, number>): SaleItem 
     brand: p.brand?.trim() || undefined,
     imageUrl: p.imageUrl || undefined,
     was,
+    inventory: Math.max(0, Math.floor(toNum(p.inventory))),
   };
 
   // 1. A price cut on the SKU — what the cart will actually charge.
   const sale = toNum(p.salePrice);
   if (p.onSale && sale > 0 && sale < was) {
     const pct = Math.round((1 - sale / was) * 100);
-    return pct >= 1 ? { ...base, now: sale, pct, atCheckout: false } : null;
+    return pct >= 1 ? { ...base, now: sale, pct, atCheckout: false, cartPrice: sale } : null;
   }
 
-  // 2. A percent coupon, applied at checkout. Member pricing is skipped: we can't
-  //    know which price that customer sees, so we don't claim one.
-  if (p.hasCustomerPrice) return null;
+  // 2. A percent coupon, applied at checkout — so it goes in the cart at shelf price.
   const pcts = (p.coupons ?? [])
     .map((c) => percentDeals.get(String(c.id)))
     .filter((n): n is number => n != null);
   if (!pcts.length) return null;
   const pct = Math.max(...pcts);
   const now = Math.round(was * (1 - pct / 100) * 100) / 100;
-  return now > 0 && now < was ? { ...base, now, pct: Math.round(pct), atCheckout: true } : null;
+  return now > 0 && now < was
+    ? { ...base, now, pct: Math.round(pct), atCheckout: true, cartPrice: was }
+    : null;
 }
 
 /** Resolves to `fallback` if the promise hasn't settled in time. */
