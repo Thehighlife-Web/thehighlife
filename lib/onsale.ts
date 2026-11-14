@@ -1,95 +1,38 @@
-import { saleShelfTabs } from "@/data/site";
-import { getSaleSeen } from "@/lib/saleSeen";
-import { sortByNewest } from "@/lib/sortProducts";
-
 /**
- * The homepage's On Sale shelf: what's discounted right now, by category, with
- * the percent off and the price they'll pay.
+ * Products currently marked down, straight from JSCart's public products endpoint.
  *
- * Built here, on the server, from JSCart's public cart endpoints — not by
- * steering the JSCart widget, which is what the row used to embed. The widget
- * can't do it: showOnSale() clears the category and filterByCategory() clears
- * on-sale, and the server ignores `onsale=1` whenever `cat=` is present (checked:
- * cat=8&onsale=1 returns the whole Flower category). So this fetches each
- * category once and keeps only the ids that are genuinely discounted.
- *
- * ── WHAT COUNTS AS "ON SALE" ─────────────────────────────────────────────────
- * Proteus's own on-sale list mixes three things (Nov 2026: 286 items):
- *
- *   • a PRICE CUT set on the SKU (onSale + salePrice < price) — 89 items
- *   • a PERCENT-OFF coupon on the item ("30% off all Find") — 93 items
- *   • a buy-one-get-one coupon and nothing else — 104 items
- *
- * Elijah asked for items with a percent off and a discounted price, so the first
- * two are in and BOGO is out: it has no single price to show.
- *
- * A price cut WINS over a coupon on the same item — the same honesty rule as
- * components/ProteusCouponPrice.tsx. Coupon prices are flagged `atCheckout`,
- * because Proteus's cart still shows the shelf price until checkout applies the
- * coupon (its validate_cart reprices a coupon item back to full).
- *
- * Never throws: the homepage has to render if Proteus is unreachable, and the
- * section simply disappears on an empty result.
+ * Same shape of thing as lib/deals.ts — and deliberately so. That one returns
+ * COUPON artwork ("B1G1", "25% off"); this returns actual PRODUCTS with real
+ * prices ("$150 → $100"). Both are unauthenticated GETs on the public cart host,
+ * so neither needs a key and neither drags the ~570KB JSCart bundle onto a page
+ * that has no shop on it.
  */
-
-export type SaleItem = {
-  id: string;
+export type OnSaleProduct = {
+  id: number | string;
   name: string;
   brand?: string;
+  /** Regular price, struck through in the UI. */
+  price: number;
+  /** What they actually pay. Always less than `price` — see the filter below. */
+  salePrice: number;
   imageUrl?: string;
-  /** Shelf price, struck through. */
-  was: number;
-  /** What they pay. Always less than `was`. */
-  now: number;
-  /** Whole-number percent off, for the badge. Never 0. */
-  pct: number;
-  /** A coupon saving Proteus applies at checkout — the cart shows `was` until then. */
-  atCheckout: boolean;
+  slug?: string;
+  /** price - salePrice, precomputed so the UI doesn't repeat the arithmetic. */
+  saved: number;
 };
 
-export type SaleTab = { label: string; cat: number; items: SaleItem[] };
-
-export type SaleShelf = {
-  /** Everything on sale, newest markdown first. */
-  all: SaleItem[];
-  /** One per category in saleShelfTabs that has anything on sale; empty ones are dropped. */
-  tabs: SaleTab[];
-};
-
-const EMPTY: SaleShelf = { all: [], tabs: [] };
-
-const API = "https://cart.proteus420.com/highlife/api_cart_v2.cfm";
-const ACCOUNT = "accountId=1204&locationId=1";
+const ON_SALE_URL =
+  "https://cart.proteus420.com/highlife/api_cart_v2.cfm?action=products&onsale=1&sortby=newest&pageSize=200";
 
 /** Matches lib/deals.ts — close to the register without hammering Proteus. */
 const REVALIDATE_SECONDS = 300;
 
 /**
- * A rail is skimmed, not exhausted — each tab shows this many and the "View all"
- * link covers the rest. 24 images per tab is already plenty for a row most people
- * scroll a few cards into.
+ * A rail is skimmed, not exhausted. The store has ~93 items on sale; rendering
+ * every one would mean 93 product images on the homepage for a row most people
+ * scroll a few cards into. "View all on sale" covers the rest.
  */
-const MAX_PER_TAB = 24;
-
-/**
- * Proteus returns a whole category in one page today (count === rows, largest is
- * Pre-Rolls at 379 rows / 541KB). Page anyway in case that changes — but bounded,
- * so a misbehaving count can't turn one homepage render into dozens of requests.
- * Every response must stay under Next's 2MB fetch-cache limit to be cached at all,
- * which is why the page size isn't simply raised instead.
- */
-const PAGE_SIZE = 1000;
-const MAX_PAGES = 4;
-
-/**
- * The sale-date note is a nicety; the shelf must not wait on it. getSaleSeen()
- * bounds its own blob read and Proteus fetch, but together those could still add
- * seconds to a homepage render, so it gets one overall limit here and the shelf
- * falls back to product-id order if it misses.
- */
-const SALE_SEEN_BUDGET_MS = 1500;
-
-type RawCoupon = { id?: number | string };
+const MAX_ITEMS = 24;
 
 type RawProduct = {
   id?: number | string;
@@ -97,155 +40,101 @@ type RawProduct = {
   brand?: string;
   price?: number | string;
   salePrice?: number | string;
-  onSale?: boolean;
-  hasCustomerPrice?: boolean;
-  /** Sold by size only — the widget shows "View Options" instead of a price. */
-  subsOnly?: boolean | number | string;
-  coupons?: RawCoupon[];
   imageUrl?: string;
+  slug?: string;
   inStock?: number | boolean;
   thc?: number | string;
   cbd?: number | string;
 };
-
-type ProductsResponse = { success?: boolean; count?: number | string; products?: RawProduct[] };
-
-type RawDeal = { id?: number | string; type?: string; amount?: number | string };
 
 const toNum = (v: unknown): number => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 };
 
-const truthy = (v: unknown) => v === true || toNum(v) > 0 || v === "true";
-
-async function getJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
-
-/** Every product in a products query, following pages if Proteus ever splits them. */
-async function getAllProducts(query: string): Promise<RawProduct[] | null> {
-  const out: RawProduct[] = [];
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const data = await getJson<ProductsResponse>(
-      `${API}?action=products&${query}&${ACCOUNT}&page=${page}&limit=${PAGE_SIZE}`,
-    );
-    if (!data?.success || !Array.isArray(data.products)) return page === 1 ? null : out;
-    out.push(...data.products);
-    const total = toNum(data.count);
-    if (data.products.length === 0 || !total || out.length >= total) break;
-  }
-  return out;
-}
-
-/** deal id -> percent off, for percent-type deals only. */
-async function getPercentDeals(): Promise<Map<string, number>> {
-  const data = await getJson<RawDeal[] | { deals?: RawDeal[] }>(`${API}?action=deals&${ACCOUNT}`);
-  const list = Array.isArray(data) ? data : Array.isArray(data?.deals) ? data.deals : [];
-  const out = new Map<string, number>();
-  for (const d of list) {
-    const pct = toNum(d.amount);
-    // Same bounds as ProteusCouponPrice: a 0% or 100%+ "discount" is a data error.
-    if (d.type === "percent" && d.id != null && pct > 0 && pct < 100) out.set(String(d.id), pct);
-  }
-  return out;
-}
-
-/** The item's real saving, or null if it has none we can honestly show as a price. */
-function toSaleItem(p: RawProduct, percentDeals: Map<string, number>): SaleItem | null {
-  const name = typeof p.name === "string" ? p.name.trim() : "";
-  const was = toNum(p.price);
-  const inStock = p.inStock === true || toNum(p.inStock) > 0;
-  // Cannabis products always carry a potency figure; accessories come back with
-  // both at zero. The feed's category is blank, so this is the reliable signal.
-  const isCannabis = toNum(p.thc) > 0 || toNum(p.cbd) > 0;
-  // A size-only product's `price` is a base unit price, not what anyone pays.
-  if (!name || was <= 0 || !inStock || !isCannabis || truthy(p.subsOnly) || p.id == null) return null;
-
-  const base = {
-    id: String(p.id),
-    name,
-    brand: p.brand?.trim() || undefined,
-    imageUrl: p.imageUrl || undefined,
-    was,
-  };
-
-  // 1. A price cut on the SKU — what the cart will actually charge.
-  const sale = toNum(p.salePrice);
-  if (p.onSale && sale > 0 && sale < was) {
-    const pct = Math.round((1 - sale / was) * 100);
-    return pct >= 1 ? { ...base, now: sale, pct, atCheckout: false } : null;
+/**
+ * In-stock, genuinely-discounted products, most expensive first.
+ * Never throws: the homepage must render even if Proteus is unreachable, and
+ * callers hide the rail on an empty array.
+ */
+/**
+ * Rotates through the brands so the rail reads as a genuine mix.
+ *
+ * The feed arrives clustered — 15 Jeeter, 9 Ruby's, 8 Cannaboss and so on — so
+ * taking it in order shows one brand over and over. This groups by brand and then
+ * takes one from each in turn, so with 19 brands available the first 19 cards are
+ * 19 different brands before any repeats.
+ *
+ * (Proteus has no usable category field on this feed and its sortby=newest isn't
+ * chronological, so brand is the only trustworthy axis to vary on.)
+ */
+function rotateBrands<T extends { brand?: string }>(items: T[]): T[] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const key = (item.brand || "").trim().toLowerCase();
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(item);
+    else groups.set(key, [item]);
   }
 
-  // 2. A percent coupon, applied at checkout. Member pricing is skipped: we can't
-  //    know which price that customer sees, so we don't claim one.
-  if (p.hasCustomerPrice) return null;
-  const pcts = (p.coupons ?? [])
-    .map((c) => percentDeals.get(String(c.id)))
-    .filter((n): n is number => n != null);
-  if (!pcts.length) return null;
-  const pct = Math.max(...pcts);
-  const now = Math.round(was * (1 - pct / 100) * 100) / 100;
-  return now > 0 && now < was ? { ...base, now, pct: Math.round(pct), atCheckout: true } : null;
-}
-
-/** Resolves to `fallback` if the promise hasn't settled in time. */
-function within<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
-  return new Promise<T>((resolve) => {
-    const timer = setTimeout(() => resolve(fallback), ms);
-    p.then(
-      (v) => {
-        clearTimeout(timer);
-        resolve(v);
-      },
-      () => {
-        clearTimeout(timer);
-        resolve(fallback);
-      },
-    );
-  });
-}
-
-export async function getSaleShelf(): Promise<SaleShelf> {
-  try {
-    // Everything at once: the sale list, the percent deals, every category, and
-    // the sale-date note. They're independent, and serially this would be nine
-    // round trips on a cold cache.
-    const [onSale, percentDeals, seen, ...categories] = await Promise.all([
-      getAllProducts("onsale=1"),
-      getPercentDeals(),
-      within(getSaleSeen(), SALE_SEEN_BUDGET_MS, { firstSeen: {}, updatedAt: null }),
-      ...saleShelfTabs.map((t) => getAllProducts(`cat=${t.cat}`)),
-    ]);
-    if (!onSale) return EMPTY;
-
-    const items = new Map<string, SaleItem>();
-    for (const p of onSale) {
-      const item = toSaleItem(p, percentDeals);
-      if (item) items.set(item.id, item);
+  const queues = [...groups.values()];
+  const out: T[] = [];
+  let placed = true;
+  while (placed) {
+    placed = false;
+    for (const q of queues) {
+      const next = q.shift();
+      if (next) {
+        out.push(next);
+        placed = true;
+      }
     }
-    if (!items.size) return EMPTY;
+  }
+  return out;
+}
 
-    // Most recently marked down first (lib/saleSeen keeps that note, because
-    // Proteus has no sale dates); falls back to product id when the note is empty.
-    const all = sortByNewest([...items.values()], seen.firstSeen);
+export async function getOnSaleProducts(): Promise<OnSaleProduct[]> {
+  try {
+    const res = await fetch(ON_SALE_URL, { next: { revalidate: REVALIDATE_SECONDS } });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { success?: boolean; products?: RawProduct[] };
+    if (!data?.success || !Array.isArray(data.products)) return [];
 
-    const tabs: SaleTab[] = [];
-    saleShelfTabs.forEach((t, i) => {
-      const ids = new Set((categories[i] ?? []).map((p) => String(p.id)));
-      // Filtering the already-sorted list keeps every tab in the same order.
-      const inCat = all.filter((item) => ids.has(item.id));
-      if (inCat.length) tabs.push({ ...t, items: inCat.slice(0, MAX_PER_TAB) });
-    });
+    const cleaned = data.products
+      .map((p) => {
+        const price = toNum(p.price);
+        const salePrice = toNum(p.salePrice);
+        return {
+          id: p.id ?? "",
+          name: typeof p.name === "string" ? p.name : "",
+          brand: p.brand || undefined,
+          price,
+          salePrice,
+          imageUrl: p.imageUrl || undefined,
+          slug: p.slug || undefined,
+          saved: price - salePrice,
+          inStock: p.inStock === true || toNum(p.inStock) > 0,
+          // Cannabis products always carry a potency figure; accessories and pet
+          // treats come back with both at zero. This is the only reliable signal —
+          // the feed has no category, and matching on names is worse than useless
+          // here ("Strawberry" contains "raw").
+          isCannabis: toNum(p.thc) > 0 || toNum(p.cbd) > 0,
+        };
+      })
+      // Don't advertise something that isn't on the shelf, and guard against a
+      // feed where salePrice equals (or exceeds) price — that isn't a markdown.
+      .filter(
+        (p) => p.inStock && p.isCannabis && p.name && p.price > 0 && p.salePrice > 0 && p.saved > 0,
+      )
+      .map(({ inStock: _inStock, isCannabis: _isCannabis, ...p }) => p);
 
-    return { all: all.slice(0, MAX_PER_TAB), tabs };
+    // Biggest saving first, THEN rotate brands. Rotation keeps each brand's queue in
+    // order, so this makes every brand lead with its strongest markdown — and the
+    // rail as a whole opens with the best deal in the store rather than whatever
+    // happened to come back first.
+    const byBestDeal = [...cleaned].sort((a, b) => b.saved - a.saved);
+    return rotateBrands(byBestDeal).slice(0, MAX_ITEMS);
   } catch {
-    return EMPTY;
+    return [];
   }
 }

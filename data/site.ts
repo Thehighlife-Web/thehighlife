@@ -233,29 +233,33 @@ export const promoPopup: {
 };
 
 /**
- * ── HOMEPAGE ON SALE SHELF — CATEGORY TABS ──
+ * ── HOMEPAGE LIVE ROW TABS ──
  *
- * The category tabs on the homepage's On Sale shelf (components/SaleShelf). Each
- * shows only what's discounted in that category (see lib/onsale.ts for what
- * counts), after an "All" tab that's always first.
+ * The tabs over the homepage's live product row (components/LiveShopRow). Each
+ * one drives the SAME JSCart shop already on the page — it can only run once per
+ * page — so only one tab's products show at a time, every one of them real
+ * tiles with a working Add button.
  *
- * `cat` is JSCart's real category id — the same ones as `shopCategories` above —
- * and includes its sub-categories (8 Flower covers 3.5g, 7g, 14g...).
+ *   onsale    → JSCart's showOnSale(), ordered biggest saving first (ProteusSortFix)
+ *   category  → filterByCategory(cat), ordered Best Sellers. `cat` is JSCart's real
+ *               category id — the same ones as `shopCategories` above.
+ *   top       → no category + Best Sellers ("Top Sellers")
  *
- * List every category worth a tab; one with nothing on sale today is dropped
- * automatically and comes back the day something in it is marked down. Each one
- * costs a cached Proteus request per 5 minutes, so don't add sub-categories.
- * Order here is the order of the tabs.
+ * Reorder or swap these freely; the first one is what the row opens on (if
+ * nothing is on sale, the On Sale tab drops out and the next one opens).
  */
-export const saleShelfTabs: { label: string; cat: number }[] = [
-  { label: "Flower", cat: 8 },
-  { label: "Pre-Rolls", cat: 9 },
-  { label: "Vapes", cat: 6 },
-  { label: "Edibles", cat: 4 },
-  { label: "Concentrates", cat: 11 },
-  { label: "Tinctures", cat: 12 },
-  { label: "Topicals", cat: 7 },
-  { label: "CBD", cat: 5 },
+export type LiveRowTab =
+  | { key: "onsale"; label: string }
+  | { key: "category"; label: string; cat: number }
+  | { key: "top"; label: string };
+
+export const liveRowTabs: LiveRowTab[] = [
+  { key: "onsale", label: "On Sale" },
+  { key: "category", label: "Flower", cat: 8 },
+  { key: "category", label: "Prerolls", cat: 9 },
+  { key: "category", label: "Vapes", cat: 6 },
+  { key: "category", label: "Edibles", cat: 4 },
+  { key: "top", label: "Top Sellers" },
 ];
 
 /**
