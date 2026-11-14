@@ -1,39 +1,39 @@
-import { getOnSaleProducts } from "@/lib/onsale";
-import LiveShopRow from "./LiveShopRow";
+import { getSaleShelf } from "@/lib/onsale";
+import SaleShelf from "./SaleShelf";
 
 /**
- * "Live From The Shelf" — the homepage's live product row, with tabs for what to
- * show: what's on sale, a category, or top sellers (see LiveShopRow).
+ * The homepage's On Sale shelf (it was "Live From The Shelf").
  *
  * Complements the deals band above rather than repeating it: that one shows
- * coupon artwork ("B1G1"), this shows real products at real prices, with Add.
+ * coupon artwork ("B1G1"), this shows the actual products that are cheaper today,
+ * with the percent off and the price — tabbed by category.
  *
- * The heading and lead are rendered here on the server so they're in the HTML
- * straight away; the tabs, the "View All" link and the tiles come from the shop
- * once it loads. The server-side feed (lib/onsale.ts) is used for one decision
- * only: whether there's anything on sale today, which decides if the On Sale tab
- * is offered at all.
+ * All of it is rendered here on the server from lib/onsale.ts, so it's in the HTML
+ * straight away and the homepage no longer loads JSCart at all. When nothing is on
+ * sale (or Proteus can't be reached) the whole section is left out rather than
+ * showing an empty shelf.
  */
 export default async function LiveShelf() {
-  const onSale = await getOnSaleProducts();
+  const { all, tabs } = await getSaleShelf();
+  if (!all.length) return null;
 
   return (
     <section className="onsale" id="onsale">
       <div className="wrap onsale-wrap">
         <div className="onsale-head">
           <h2>
-            Live From
+            On Sale
             <br />
-            The Shelf
+            Right Now
           </h2>
         </div>
 
         <p className="onsale-lead">
-          Straight from the register — what&rsquo;s marked down, what&rsquo;s selling, and each
-          shelf in turn. Add to your cart right here. Prices exclude tax, while supplies last.
+          Marked down today, straight from the register. Tap anything to see it in the shop and add
+          it to your cart. Prices exclude tax, while supplies last.
         </p>
 
-        <LiveShopRow hasOnSale={onSale.length > 0} />
+        <SaleShelf all={all} tabs={tabs} />
       </div>
     </section>
   );
