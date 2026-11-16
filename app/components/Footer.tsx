@@ -8,6 +8,13 @@ export default function Footer() {
           <span className="a">Live The</span>
           <span className="b">High Life</span>
         </div>
+        {/* The store phone, big and glowing so nobody has to hunt for it. No
+            "reveal" class on purpose: it must show even if scroll effects don't run.
+            Tapping it on a phone opens the dialer. */}
+        <a className="footphone" href={`tel:${store.phoneTel}`}>
+          <span className="footphone-label">Call us</span>
+          <span className="footphone-num">{store.phone}</span>
+        </a>
         <div className="footmeta">
           <span>
             {/* Tapping the address opens directions — on a phone, in the Maps app. */}

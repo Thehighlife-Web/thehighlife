@@ -33,6 +33,9 @@ export const store = {
     `${ADDRESS_1}, ${ADDRESS_2}`,
   )}`,
   email: "info@thehighlife.shop",
+  /** Shown big in the footer of every page. Tapping it on a phone dials the store. */
+  phone: "(631) 270-4989",
+  phoneTel: "+16312704989",
   license: "OCM-CAURD-25-000277-D1",
   legal:
     "The High Life™ is a trademark of Hydro Phonics, LLC. West Babylon NY. ©2026 All Rights Reserved. NYS OCM#: OCM-CAURD-25-000277-D1. All products, trademarks, service marks, trade names, and logos appearing on this site remain the property of their respective owners. For use only by adults 21 and older.",
